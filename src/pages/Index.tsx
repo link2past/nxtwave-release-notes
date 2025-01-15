@@ -3,6 +3,9 @@ import { ReleaseCard, type ReleaseNote } from "@/components/ReleaseCard";
 import { SearchBar } from "@/components/SearchBar";
 import { FilterBar } from "@/components/FilterBar";
 import { AdminDialog } from "@/components/AdminDialog";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { Moon, Sun } from "lucide-react";
 
 // Sample data - in a real app this would come from an API
 const initialReleases: ReleaseNote[] = [
@@ -46,6 +49,7 @@ export default function Index() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const { theme, setTheme } = useTheme();
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
     if (updatedRelease.id) {
@@ -58,8 +62,8 @@ export default function Index() {
         )
       );
     } else {
-      // Add new release
-      setReleases(prev => [...prev, updatedRelease as ReleaseNote]);
+      // Add new release at the beginning of the array for immediate visibility
+      setReleases(prev => [(updatedRelease as ReleaseNote), ...prev]);
     }
   };
 
@@ -81,42 +85,62 @@ export default function Index() {
     });
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Release Notes</h1>
-        <AdminDialog onSave={handleSaveRelease} />
-      </div>
-      
-      <div className="space-y-6 mb-8">
-        <SearchBar value={search} onChange={setSearch} />
-        
-        <FilterBar
-          category={category}
-          sortOrder={sortOrder}
-          onCategoryChange={setCategory}
-          onSortChange={setSortOrder}
-          onClear={() => {
-            setSearch("");
-            setCategory("all");
-            setSortOrder("desc");
-          }}
-        />
-      </div>
-
-      <div className="grid gap-6">
-        {filteredReleases.map((release) => (
-          <div key={release.id} className="flex items-start gap-4">
-            <ReleaseCard release={release} />
-            <AdminDialog release={release} onSave={handleSaveRelease} />
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      <div className="container py-8 px-4 mx-auto max-w-6xl">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            Release Notes
+          </h1>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-full"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
+            <AdminDialog onSave={handleSaveRelease} />
           </div>
-        ))}
-      </div>
-
-      {filteredReleases.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          No releases found matching your criteria
         </div>
-      )}
+        
+        <div className="space-y-6 mb-8">
+          <SearchBar value={search} onChange={setSearch} />
+          
+          <FilterBar
+            category={category}
+            sortOrder={sortOrder}
+            onCategoryChange={setCategory}
+            onSortChange={setSortOrder}
+            onClear={() => {
+              setSearch("");
+              setCategory("all");
+              setSortOrder("desc");
+            }}
+          />
+        </div>
+
+        <div className="grid gap-6">
+          {filteredReleases.map((release) => (
+            <div key={release.id} className="flex items-start gap-4 w-full">
+              <div className="flex-1">
+                <ReleaseCard release={release} />
+              </div>
+              <AdminDialog release={release} onSave={handleSaveRelease} />
+            </div>
+          ))}
+        </div>
+
+        {filteredReleases.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            No releases found matching your criteria
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -29,10 +29,12 @@ const categoryLabels = {
 
 export function ReleaseCard({ release }: { release: ReleaseNote }) {
   return (
-    <div className="p-6 bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow border">
+    <div className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className={`px-2 py-1 text-xs font-medium text-white rounded ${categoryColors[release.category]}`}>
+          <span 
+            className={`px-3 py-1 text-xs font-medium text-white rounded-full ${categoryColors[release.category]} shadow-sm`}
+          >
             {categoryLabels[release.category]}
           </span>
           <time className="text-sm text-muted-foreground">
@@ -40,14 +42,18 @@ export function ReleaseCard({ release }: { release: ReleaseNote }) {
           </time>
         </div>
       </div>
-      <h3 className="text-lg font-semibold mb-2">{release.title}</h3>
-      <p className="text-muted-foreground mb-4">{release.description}</p>
+      <h3 className="text-xl font-semibold mb-3 text-card-foreground">{release.title}</h3>
+      <p className="text-muted-foreground mb-4 leading-relaxed">{release.description}</p>
       <div className="flex flex-wrap gap-2">
         {release.tags.map((tag) => (
           <span
             key={tag.id}
-            className="px-2 py-1 text-xs rounded-full"
-            style={{ backgroundColor: tag.color + "20", color: tag.color }}
+            className="px-3 py-1 text-xs rounded-full transition-colors duration-200 hover:opacity-80"
+            style={{ 
+              backgroundColor: `${tag.color}20`, 
+              color: tag.color,
+              boxShadow: `0 1px 2px ${tag.color}10`
+            }}
           >
             {tag.name}
           </span>
