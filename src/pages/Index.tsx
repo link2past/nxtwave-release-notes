@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { ReleaseCard } from "@/components/ReleaseCard";
+import { ReleaseCard, type ReleaseNote } from "@/components/ReleaseCard";
 import { SearchBar } from "@/components/SearchBar";
 import { FilterBar } from "@/components/FilterBar";
+import { AdminDialog } from "@/components/AdminDialog";
 
 // Sample data - in a real app this would come from an API
-const releases = [
+const initialReleases: ReleaseNote[] = [
   {
     id: "1",
     title: "New Dashboard Features",
@@ -38,12 +39,29 @@ const releases = [
       { id: "6", name: "animations", color: "#06b6d4" },
     ],
   },
-] as const;
+];
 
 export default function Index() {
+  const [releases, setReleases] = useState<ReleaseNote[]>(initialReleases);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
+    if (updatedRelease.id) {
+      // Update existing release
+      setReleases(prev =>
+        prev.map(release =>
+          release.id === updatedRelease.id
+            ? { ...release, ...updatedRelease } as ReleaseNote
+            : release
+        )
+      );
+    } else {
+      // Add new release
+      setReleases(prev => [...prev, updatedRelease as ReleaseNote]);
+    }
+  };
 
   const filteredReleases = releases
     .filter((release) => {
@@ -52,7 +70,7 @@ export default function Index() {
         release.title.toLowerCase().includes(search.toLowerCase()) ||
         release.description.toLowerCase().includes(search.toLowerCase());
 
-      const matchesCategory = category === "" || release.category === category;
+      const matchesCategory = category === "all" || release.category === category;
 
       return matchesSearch && matchesCategory;
     })
@@ -62,15 +80,12 @@ export default function Index() {
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
 
-  const clearFilters = () => {
-    setSearch("");
-    setCategory("");
-    setSortOrder("desc");
-  };
-
   return (
     <div className="container py-8">
-      <h1 className="text-4xl font-bold mb-8">Release Notes</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">Release Notes</h1>
+        <AdminDialog onSave={handleSaveRelease} />
+      </div>
       
       <div className="space-y-6 mb-8">
         <SearchBar value={search} onChange={setSearch} />
@@ -80,13 +95,20 @@ export default function Index() {
           sortOrder={sortOrder}
           onCategoryChange={setCategory}
           onSortChange={setSortOrder}
-          onClear={clearFilters}
+          onClear={() => {
+            setSearch("");
+            setCategory("all");
+            setSortOrder("desc");
+          }}
         />
       </div>
 
       <div className="grid gap-6">
         {filteredReleases.map((release) => (
-          <ReleaseCard key={release.id} release={release} />
+          <div key={release.id} className="flex items-start gap-4">
+            <ReleaseCard release={release} />
+            <AdminDialog release={release} onSave={handleSaveRelease} />
+          </div>
         ))}
       </div>
 
