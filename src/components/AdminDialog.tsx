@@ -10,12 +10,14 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ReleaseNote } from "./ReleaseCard";
 import { useToast } from "@/components/ui/use-toast";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   category: z.enum(["feature", "bugfix", "enhancement"]),
   tags: z.string().min(1, "At least one tag is required"),
+  datetime: z.string().min(1, "Date and time is required"),
 });
 
 interface AdminDialogProps {
@@ -34,6 +36,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
       description: release?.description || "",
       category: release?.category || "feature",
       tags: release?.tags.map(t => t.name).join(", ") || "",
+      datetime: release?.datetime ? format(new Date(release.datetime), "yyyy-MM-dd'T'HH:mm") : format(new Date(), "yyyy-MM-dd'T'HH:mm"),
     },
   });
 
@@ -48,7 +51,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
       ...release,
       ...values,
       tags,
-      datetime: release?.datetime || new Date().toISOString(),
+      datetime: new Date(values.datetime).toISOString(),
       id: release?.id || `release-${Date.now()}`,
     };
 
@@ -94,6 +97,19 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="datetime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Release Date & Time</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

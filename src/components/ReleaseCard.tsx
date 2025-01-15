@@ -16,9 +16,9 @@ export interface ReleaseNote {
 }
 
 const categoryColors = {
-  feature: "bg-category-feature",
-  bugfix: "bg-category-bugfix",
-  enhancement: "bg-category-enhancement",
+  feature: "bg-emerald-500 text-white",
+  bugfix: "bg-red-500 text-white",
+  enhancement: "bg-purple-500 text-white",
 } as const;
 
 const categoryLabels = {
@@ -33,7 +33,7 @@ export function ReleaseCard({ release }: { release: ReleaseNote }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span 
-            className={`px-3 py-1 text-xs font-medium text-white rounded-full ${categoryColors[release.category]} shadow-sm`}
+            className={`px-3 py-1 text-xs font-medium rounded-full shadow-sm ${categoryColors[release.category]}`}
           >
             {categoryLabels[release.category]}
           </span>
