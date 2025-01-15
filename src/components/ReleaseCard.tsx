@@ -1,12 +1,12 @@
 import { format } from "date-fns";
 
-interface Tag {
+export interface Tag {
   id: string;
   name: string;
   color: string;
 }
 
-interface ReleaseNote {
+export interface ReleaseNote {
   id: string;
   title: string;
   description: string;
@@ -19,13 +19,13 @@ const categoryColors = {
   feature: "bg-category-feature",
   bugfix: "bg-category-bugfix",
   enhancement: "bg-category-enhancement",
-};
+} as const;
 
 const categoryLabels = {
   feature: "Feature",
   bugfix: "Bug Fix",
   enhancement: "Enhancement",
-};
+} as const;
 
 export function ReleaseCard({ release }: { release: ReleaseNote }) {
   return (

@@ -29,7 +29,7 @@ export function FilterBar({
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All Categories</SelectItem>
+          <SelectItem value="all">All Categories</SelectItem>
           <SelectItem value="feature">Feature</SelectItem>
           <SelectItem value="bugfix">Bug Fix</SelectItem>
           <SelectItem value="enhancement">Enhancement</SelectItem>
