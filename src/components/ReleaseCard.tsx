@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 export interface Tag {
   id: string;
@@ -35,7 +35,7 @@ interface ReleaseCardProps {
 }
 
 export function ReleaseCard({ release, onEdit }: ReleaseCardProps) {
-  const { role } = useAuth();
+  const { role } = useUserRole();
 
   return (
     <Dialog>
@@ -83,47 +83,29 @@ export function ReleaseCard({ release, onEdit }: ReleaseCardProps) {
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent>
         <DialogHeader>
-          
-
-Let's add user roles and a popup card for release details.
-
-<lov-code>
-We'll need to:
-1. Create a new context for user roles
-2. Add a role selector component
-3. Modify the Index page to handle roles
-4. Add a popup card for release details
-
-First, let's create the user role context:
-
-<lov-write file_path="src/contexts/UserRoleContext.tsx">
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-type Role = 'admin' | 'user';
-
-interface UserRoleContextType {
-  role: Role;
-  setRole: (role: Role) => void;
-}
-
-const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
-
-export function UserRoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<Role>('user');
-
-  return (
-    <UserRoleContext.Provider value={{ role, setRole }}>
-      {children}
-    </UserRoleContext.Provider>
+          <DialogTitle>{release.title}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-muted-foreground">{release.description}</p>
+          <div className="flex flex-wrap gap-2">
+            {release.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="px-3 py-1 text-xs rounded-full transition-colors duration-200"
+                style={{ 
+                  backgroundColor: `${tag.color}20`, 
+                  color: tag.color,
+                  boxShadow: `0 1px 2px ${tag.color}10`
+                }}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-}
-
-export function useUserRole() {
-  const context = useContext(UserRoleContext);
-  if (context === undefined) {
-    throw new Error('useUserRole must be used within a UserRoleProvider');
-  }
-  return context;
 }
