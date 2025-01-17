@@ -7,8 +7,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
-import { RoleSelector } from "@/components/RoleSelector";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Index() {
   const [releases, setReleases] = useState<ReleaseNote[]>(initialReleases);
@@ -21,6 +20,7 @@ export default function Index() {
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
     if (updatedRelease.id) {
+      // Update existing release
       setReleases(prev =>
         prev.map(release =>
           release.id === updatedRelease.id
@@ -29,7 +29,8 @@ export default function Index() {
         )
       );
     } else {
-      setReleases(prev => [(updatedRelease as ReleaseNote), ...prev]);
+      // Add new release at the beginning of the list
+      setReleases(prev => [{ ...updatedRelease as ReleaseNote }, ...prev]);
     }
   };
 
@@ -58,7 +59,6 @@ export default function Index() {
             Release Notes
           </h1>
           <div className="flex items-center gap-4">
-            <RoleSelector />
             <Button
               variant="outline"
               size="icon"
@@ -93,9 +93,24 @@ export default function Index() {
 
         <div className="grid gap-6">
           {filteredReleases.map((release) => (
-            <div key={release.id} className="flex items-start gap-4 w-full">
-              <div className="flex-1 cursor-pointer" onClick={() => setSelectedRelease(release)}>
-                <ReleaseCard release={release} />
+            <div 
+              key={release.id} 
+              className="flex items-start gap-4 w-full"
+              onClick={() => setSelectedRelease(release)}
+            >
+              <div className="flex-1 cursor-pointer">
+                <ReleaseCard 
+                  release={release} 
+                  onEdit={() => {
+                    if (role === 'admin') {
+                      setSelectedRelease(null);
+                      const dialogElement = document.querySelector('[data-dialog-edit]');
+                      if (dialogElement) {
+                        (dialogElement as HTMLButtonElement).click();
+                      }
+                    }
+                  }} 
+                />
               </div>
               {role === 'admin' && (
                 <AdminDialog release={release} onSave={handleSaveRelease} />
@@ -114,7 +129,9 @@ export default function Index() {
           <DialogContent className="max-w-2xl">
             {selectedRelease && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold">{selectedRelease.title}</h2>
+                <DialogHeader>
+                  <DialogTitle>{selectedRelease.title}</DialogTitle>
+                </DialogHeader>
                 <p className="text-muted-foreground">{selectedRelease.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedRelease.tags.map((tag) => (
