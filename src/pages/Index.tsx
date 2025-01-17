@@ -1,21 +1,15 @@
 import { useState } from "react";
-import { ReleaseCard, type ReleaseNote } from "@/components/ReleaseCard";
-import { SearchBar } from "@/components/SearchBar";
-import { FilterBar } from "@/components/FilterBar";
-import { AdminDialog } from "@/components/AdminDialog";
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
-import { useUserRole } from "@/contexts/UserRoleContext";
+import { type ReleaseNote } from "@/components/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Header } from "@/components/Header";
+import { FiltersSection } from "@/components/FiltersSection";
+import { ReleaseList } from "@/components/ReleaseList";
 
 export default function Index() {
   const [releases, setReleases] = useState<ReleaseNote[]>(initialReleases);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const { theme, setTheme } = useTheme();
-  const { role } = useUserRole();
   const [selectedRelease, setSelectedRelease] = useState<ReleaseNote | null>(null);
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
@@ -54,76 +48,27 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Release Notes
-          </h1>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-            {role === 'admin' && <AdminDialog onSave={handleSaveRelease} />}
-          </div>
-        </div>
+        <Header onSaveRelease={handleSaveRelease} />
         
-        <div className="space-y-6 mb-8">
-          <SearchBar value={search} onChange={setSearch} />
-          
-          <FilterBar
-            category={category}
-            sortOrder={sortOrder}
-            onCategoryChange={setCategory}
-            onSortChange={setSortOrder}
-            onClear={() => {
-              setSearch("");
-              setCategory("all");
-              setSortOrder("desc");
-            }}
-          />
-        </div>
+        <FiltersSection
+          search={search}
+          category={category}
+          sortOrder={sortOrder}
+          onSearchChange={setSearch}
+          onCategoryChange={setCategory}
+          onSortChange={setSortOrder}
+          onClear={() => {
+            setSearch("");
+            setCategory("all");
+            setSortOrder("desc");
+          }}
+        />
 
-        <div className="grid gap-6">
-          {filteredReleases.map((release) => (
-            <div 
-              key={release.id} 
-              className="flex items-start gap-4 w-full"
-              onClick={() => setSelectedRelease(release)}
-            >
-              <div className="flex-1 cursor-pointer">
-                <ReleaseCard 
-                  release={release} 
-                  onEdit={() => {
-                    if (role === 'admin') {
-                      setSelectedRelease(null);
-                      const dialogElement = document.querySelector('[data-dialog-edit]');
-                      if (dialogElement) {
-                        (dialogElement as HTMLButtonElement).click();
-                      }
-                    }
-                  }} 
-                />
-              </div>
-              {role === 'admin' && (
-                <AdminDialog release={release} onSave={handleSaveRelease} />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {filteredReleases.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            No releases found matching your criteria
-          </div>
-        )}
+        <ReleaseList
+          releases={filteredReleases}
+          onSaveRelease={handleSaveRelease}
+          onReleaseClick={setSelectedRelease}
+        />
 
         <Dialog open={!!selectedRelease} onOpenChange={() => setSelectedRelease(null)}>
           <DialogContent className="max-w-2xl">
@@ -157,7 +102,6 @@ export default function Index() {
   );
 }
 
-// Sample data - in a real app this would come from an API
 const initialReleases: ReleaseNote[] = [
   {
     id: "1",
