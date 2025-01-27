@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Header } from "@/components/Header";
 import { FiltersSection } from "@/components/FiltersSection";
 import { ReleaseList } from "@/components/ReleaseList";
+import { format } from "date-fns";
 
 export default function Index() {
   const [releases, setReleases] = useState<ReleaseNote[]>(initialReleases);
@@ -14,7 +15,6 @@ export default function Index() {
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
     if (updatedRelease.id) {
-      // Update existing release
       setReleases(prev =>
         prev.map(release =>
           release.id === updatedRelease.id
@@ -23,8 +23,11 @@ export default function Index() {
         )
       );
     } else {
-      // Add new release at the beginning of the list
-      setReleases(prev => [{ ...updatedRelease as ReleaseNote }, ...prev]);
+      const newRelease = {
+        ...updatedRelease,
+        id: crypto.randomUUID(),
+      } as ReleaseNote;
+      setReleases(prev => [newRelease, ...prev]);
     }
   };
 
@@ -73,25 +76,44 @@ export default function Index() {
         <Dialog open={!!selectedRelease} onOpenChange={() => setSelectedRelease(null)}>
           <DialogContent className="max-w-2xl">
             {selectedRelease && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <DialogHeader>
-                  <DialogTitle>{selectedRelease.title}</DialogTitle>
-                </DialogHeader>
-                <p className="text-muted-foreground">{selectedRelease.description}</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedRelease.tags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="px-3 py-1 text-xs rounded-full transition-colors duration-200"
-                      style={{ 
-                        backgroundColor: `${tag.color}20`, 
-                        color: tag.color,
-                        boxShadow: `0 1px 2px ${tag.color}10`
-                      }}
-                    >
-                      {tag.name}
+                  <DialogTitle className="text-2xl font-bold">{selectedRelease.title}</DialogTitle>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <span className={`px-3 py-1 text-xs font-medium rounded-full shadow-sm ${
+                      selectedRelease.category === 'feature' ? 'bg-emerald-500 text-white' :
+                      selectedRelease.category === 'bugfix' ? 'bg-red-500 text-white' :
+                      'bg-purple-500 text-white'
+                    }`}>
+                      {selectedRelease.category.charAt(0).toUpperCase() + selectedRelease.category.slice(1)}
                     </span>
-                  ))}
+                    <time>
+                      Released on {format(new Date(selectedRelease.datetime), "MMMM d, yyyy 'at' HH:mm")}
+                    </time>
+                  </div>
+                </DialogHeader>
+                
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <p className="text-base leading-relaxed">{selectedRelease.description}</p>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <h4 className="text-sm font-semibold mb-3">Tags</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRelease.tags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="px-3 py-1 text-xs rounded-full transition-colors duration-200"
+                        style={{ 
+                          backgroundColor: `${tag.color}20`, 
+                          color: tag.color,
+                          boxShadow: `0 1px 2px ${tag.color}10`
+                        }}
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
