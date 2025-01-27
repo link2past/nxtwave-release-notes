@@ -12,6 +12,10 @@ export default function Index() {
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedRelease, setSelectedRelease] = useState<ReleaseNote | null>(null);
+  const [dateRange, setDateRange] = useState({
+    start: "",
+    end: "",
+  });
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
     if (updatedRelease.id) {
@@ -40,7 +44,11 @@ export default function Index() {
 
       const matchesCategory = category === "all" || release.category === category;
 
-      return matchesSearch && matchesCategory;
+      const matchesDateRange = 
+        (!dateRange.start || new Date(release.datetime) >= new Date(dateRange.start)) &&
+        (!dateRange.end || new Date(release.datetime) <= new Date(dateRange.end));
+
+      return matchesSearch && matchesCategory && matchesDateRange;
     })
     .sort((a, b) => {
       const dateA = new Date(a.datetime).getTime();
@@ -57,13 +65,16 @@ export default function Index() {
           search={search}
           category={category}
           sortOrder={sortOrder}
+          dateRange={dateRange}
           onSearchChange={setSearch}
           onCategoryChange={setCategory}
           onSortChange={setSortOrder}
+          onDateRangeChange={setDateRange}
           onClear={() => {
             setSearch("");
             setCategory("all");
             setSortOrder("desc");
+            setDateRange({ start: "", end: "" });
           }}
         />
 
@@ -94,8 +105,33 @@ export default function Index() {
                 </DialogHeader>
                 
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <p className="text-base leading-relaxed">{selectedRelease.description}</p>
+                  <div dangerouslySetInnerHTML={{ __html: selectedRelease.description }} />
                 </div>
+
+                {selectedRelease.media && selectedRelease.media.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold">Media</h4>
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                      {selectedRelease.media.map((item, index) => (
+                        item.type === 'image' ? (
+                          <img 
+                            key={index}
+                            src={item.url}
+                            alt=""
+                            className="rounded-md max-h-48 object-cover w-full"
+                          />
+                        ) : (
+                          <video 
+                            key={index}
+                            src={item.url}
+                            controls
+                            className="rounded-md max-h-48 w-full"
+                          />
+                        )
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="pt-4 border-t border-border">
                   <h4 className="text-sm font-semibold mb-3">Tags</h4>

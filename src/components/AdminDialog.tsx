@@ -32,7 +32,6 @@ interface AdminDialogProps {
 export function AdminDialog({ release, onSave }: AdminDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,15 +48,10 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
   const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      // In a real app, you would upload these files to a storage service
-      // For demo purposes, we'll create object URLs
-      const newMediaFiles = Array.from(files).map(file => {
-        const type = file.type.startsWith('image/') ? 'image' : 'video';
-        return {
-          type,
-          url: URL.createObjectURL(file)
-        };
-      });
+      const newMediaFiles = Array.from(files).map(file => ({
+        type: file.type.startsWith('image/') ? 'image' as const : 'video' as const,
+        url: URL.createObjectURL(file)
+      }));
       
       form.setValue('media', [...(form.getValues('media') || []), ...newMediaFiles]);
     }
