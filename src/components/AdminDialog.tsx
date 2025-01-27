@@ -64,12 +64,16 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
       color: release?.tags[index]?.color || "#2563eb",
     }));
 
-    const updatedRelease = {
+    const updatedRelease: Partial<ReleaseNote> = {
       ...release,
       ...values,
       tags,
       datetime: new Date(values.datetime).toISOString(),
       id: release?.id || `release-${Date.now()}`,
+      media: values.media?.map(m => ({
+        type: m.type,
+        url: m.url
+      }))
     };
 
     onSave(updatedRelease);
