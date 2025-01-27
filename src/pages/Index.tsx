@@ -4,7 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Header } from "@/components/Header";
 import { FiltersSection } from "@/components/FiltersSection";
 import { ReleaseList } from "@/components/ReleaseList";
-import { format } from "date-fns";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function Index() {
   const [releases, setReleases] = useState<ReleaseNote[]>(initialReleases);
@@ -16,6 +18,8 @@ export default function Index() {
     start: "",
     end: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
     if (updatedRelease.id) {
@@ -56,6 +60,12 @@ export default function Index() {
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
 
+  const totalPages = Math.ceil(filteredReleases.length / ITEMS_PER_PAGE);
+  const paginatedReleases = filteredReleases.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
@@ -79,10 +89,41 @@ export default function Index() {
         />
 
         <ReleaseList
-          releases={filteredReleases}
+          releases={paginatedReleases}
           onSaveRelease={handleSaveRelease}
           onReleaseClick={setSelectedRelease}
         />
+
+        {totalPages > 1 && (
+          <div className="mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
 
         <Dialog open={!!selectedRelease} onOpenChange={() => setSelectedRelease(null)}>
           <DialogContent className="max-w-2xl">
@@ -113,21 +154,24 @@ export default function Index() {
                     <h4 className="text-sm font-semibold">Media</h4>
                     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                       {selectedRelease.media.map((item, index) => (
-                        item.type === 'image' ? (
-                          <img 
-                            key={index}
-                            src={item.url}
-                            alt=""
-                            className="rounded-md max-h-48 object-cover w-full"
-                          />
-                        ) : (
-                          <video 
-                            key={index}
-                            src={item.url}
-                            controls
-                            className="rounded-md max-h-48 w-full"
-                          />
-                        )
+                        <div key={index} className="relative group cursor-pointer" onClick={() => setMaximizedMedia(item)}>
+                          {item.type === 'image' ? (
+                            <img 
+                              src={item.url}
+                              alt=""
+                              className="rounded-md max-h-48 object-cover w-full group-hover:opacity-90 transition-opacity"
+                            />
+                          ) : (
+                            <video 
+                              src={item.url}
+                              controls
+                              className="rounded-md max-h-48 w-full group-hover:opacity-90 transition-opacity"
+                            />
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="bg-black/50 text-white px-3 py-1 rounded-full text-sm">Click to maximize</span>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -151,6 +195,28 @@ export default function Index() {
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={!!maximizedMedia} onOpenChange={() => setMaximizedMedia(null)}>
+          <DialogContent className="max-w-[90vw] max-h-[90vh]">
+            {maximizedMedia && (
+              <div className="relative">
+                {maximizedMedia.type === 'image' ? (
+                  <img 
+                    src={maximizedMedia.url}
+                    alt=""
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <video 
+                    src={maximizedMedia.url}
+                    controls
+                    className="w-full h-full"
+                  />
+                )}
               </div>
             )}
           </DialogContent>
