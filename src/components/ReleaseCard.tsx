@@ -14,6 +14,10 @@ export interface ReleaseNote {
   datetime: string;
   category: "feature" | "bugfix" | "enhancement";
   tags: Tag[];
+  media?: {
+    type: "image" | "video";
+    url: string;
+  }[];
 }
 
 const categoryColors = {
@@ -37,6 +41,13 @@ interface ReleaseCardProps {
 export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
   const { role } = useUserRole();
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit) {
+      onEdit();
+    }
+  };
+
   return (
     <div 
       className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm"
@@ -55,10 +66,7 @@ export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
         </div>
         {role === "admin" && onEdit && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
+            onClick={handleEditClick}
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             Edit
@@ -66,7 +74,31 @@ export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
         )}
       </div>
       <h3 className="text-xl font-semibold mb-3 text-card-foreground">{release.title}</h3>
-      <p className="text-muted-foreground mb-4 leading-relaxed line-clamp-2">{release.description}</p>
+      <div 
+        className="text-muted-foreground mb-4 leading-relaxed line-clamp-2 prose prose-sm dark:prose-invert"
+        dangerouslySetInnerHTML={{ __html: release.description }}
+      />
+      {release.media && release.media.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {release.media.map((item, index) => (
+            item.type === 'image' ? (
+              <img 
+                key={index}
+                src={item.url}
+                alt=""
+                className="rounded-md max-h-48 object-cover"
+              />
+            ) : (
+              <video 
+                key={index}
+                src={item.url}
+                controls
+                className="rounded-md max-h-48 w-full"
+              />
+            )
+          ))}
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         {release.tags.map((tag) => (
           <span

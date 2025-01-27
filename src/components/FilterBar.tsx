@@ -6,24 +6,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 interface FilterBarProps {
   category: string;
   sortOrder: "asc" | "desc";
+  dateRange: {
+    start: string;
+    end: string;
+  };
   onCategoryChange: (value: string) => void;
   onSortChange: (value: "asc" | "desc") => void;
+  onDateRangeChange: (range: { start: string; end: string }) => void;
   onClear: () => void;
 }
 
 export function FilterBar({
   category,
   sortOrder,
+  dateRange,
   onCategoryChange,
   onSortChange,
+  onDateRangeChange,
   onClear,
 }: FilterBarProps) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 flex-wrap">
       <Select value={category} onValueChange={onCategoryChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Category" />
@@ -45,6 +53,22 @@ export function FilterBar({
           <SelectItem value="asc">Oldest first</SelectItem>
         </SelectContent>
       </Select>
+
+      <div className="flex items-center gap-2">
+        <Input
+          type="date"
+          value={dateRange.start}
+          onChange={(e) => onDateRangeChange({ ...dateRange, start: e.target.value })}
+          className="w-[180px]"
+        />
+        <span className="text-muted-foreground">to</span>
+        <Input
+          type="date"
+          value={dateRange.end}
+          onChange={(e) => onDateRangeChange({ ...dateRange, end: e.target.value })}
+          className="w-[180px]"
+        />
+      </div>
 
       <Button variant="outline" onClick={onClear}>
         Clear filters

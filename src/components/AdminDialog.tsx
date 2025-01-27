@@ -18,6 +18,10 @@ const formSchema = z.object({
   category: z.enum(["feature", "bugfix", "enhancement"]),
   tags: z.string().min(1, "At least one tag is required"),
   datetime: z.string().min(1, "Date and time is required"),
+  media: z.array(z.object({
+    type: z.enum(["image", "video"]),
+    url: z.string()
+  })).optional()
 });
 
 interface AdminDialogProps {
@@ -28,6 +32,7 @@ interface AdminDialogProps {
 export function AdminDialog({ release, onSave }: AdminDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,8 +42,26 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
       category: release?.category || "feature",
       tags: release?.tags.map(t => t.name).join(", ") || "",
       datetime: release?.datetime ? format(new Date(release.datetime), "yyyy-MM-dd'T'HH:mm") : format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+      media: release?.media || []
     },
   });
+
+  const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      // In a real app, you would upload these files to a storage service
+      // For demo purposes, we'll create object URLs
+      const newMediaFiles = Array.from(files).map(file => {
+        const type = file.type.startsWith('image/') ? 'image' : 'video';
+        return {
+          type,
+          url: URL.createObjectURL(file)
+        };
+      });
+      
+      form.setValue('media', [...(form.getValues('media') || []), ...newMediaFiles]);
+    }
+  };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const tags = values.tags.split(",").map((tag, index) => ({
@@ -66,11 +89,14 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={release ? "outline" : "default"}>
+        <Button variant={release ? "outline" : "default"} onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}>
           {release ? "Edit Release" : "New Release"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" onClick={e => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>{release ? "Edit Release" : "Create New Release"}</DialogTitle>
         </DialogHeader>
@@ -94,9 +120,9 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Description (supports HTML)</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} className="font-mono" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,6 +176,16 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
                 </FormItem>
               )}
             />
+            <FormItem>
+              <FormLabel>Media (Images/Videos)</FormLabel>
+              <Input
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                onChange={handleMediaUpload}
+                className="cursor-pointer"
+              />
+            </FormItem>
             <Button type="submit" className="w-full">
               {release ? "Update Release" : "Create Release"}
             </Button>
