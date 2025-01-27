@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
 export interface Tag {
@@ -32,13 +31,17 @@ const categoryLabels = {
 interface ReleaseCardProps {
   release: ReleaseNote;
   onEdit?: () => void;
+  onClick?: () => void;
 }
 
-export function ReleaseCard({ release, onEdit }: ReleaseCardProps) {
+export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
   const { role } = useUserRole();
 
   return (
-    <div className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm">
+    <div 
+      className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm"
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span 
