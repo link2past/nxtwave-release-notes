@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { Button } from "@/components/ui/button";
 
 export interface Tag {
   id: string;
