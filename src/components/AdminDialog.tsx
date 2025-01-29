@@ -94,7 +94,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
           {release ? "Edit Release" : "New Release"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]" onClick={e => e.stopPropagation()}>
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>{release ? "Edit Release" : "Create New Release"}</DialogTitle>
         </DialogHeader>
@@ -181,7 +181,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
                 accept="image/*,video/*"
                 multiple
                 onChange={handleMediaUpload}
-                className="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                className="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 file:transition-colors"
               />
             </FormItem>
             <Button type="submit" className="w-full">

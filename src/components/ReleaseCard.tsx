@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
-import { Button } from "@/components/ui/button";
 import { MediaDisplay } from "./MediaDisplay";
 import { TagList } from "./TagList";
 
@@ -37,13 +36,10 @@ const categoryLabels = {
 
 interface ReleaseCardProps {
   release: ReleaseNote;
-  onEdit?: () => void;
   onClick?: () => void;
 }
 
-export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
-  const { role } = useUserRole();
-
+export function ReleaseCard({ release, onClick }: ReleaseCardProps) {
   return (
     <div 
       className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm cursor-pointer"
@@ -60,19 +56,6 @@ export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
             {format(new Date(release.datetime), "MMM d, yyyy HH:mm")}
           </time>
         </div>
-        {role === "admin" && onEdit && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Edit
-          </Button>
-        )}
       </div>
       <h3 className="text-xl font-semibold mb-3 text-card-foreground">{release.title}</h3>
       <div 

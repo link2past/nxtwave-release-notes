@@ -6,8 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths } from "date-fns";
+import { format } from "date-fns";
 import {
   Popover,
   PopoverContent,
@@ -28,6 +27,8 @@ interface FilterBarProps {
   onSortChange: (value: "asc" | "desc") => void;
   onDateRangeChange: (range: { start: string; end: string }) => void;
   onClear: () => void;
+  selectedDateFilter: string;
+  onDateFilterChange: (value: string) => void;
 }
 
 export function FilterBar({
@@ -38,38 +39,9 @@ export function FilterBar({
   onSortChange,
   onDateRangeChange,
   onClear,
+  selectedDateFilter,
+  onDateFilterChange,
 }: FilterBarProps) {
-  const handleDateFilterChange = (value: string) => {
-    const now = new Date();
-    let start: Date;
-    let end: Date;
-
-    switch (value) {
-      case "today":
-        start = startOfDay(now);
-        end = endOfDay(now);
-        break;
-      case "currentMonth":
-        start = startOfMonth(now);
-        end = endOfMonth(now);
-        break;
-      case "lastMonth":
-        start = startOfMonth(subMonths(now, 1));
-        end = endOfMonth(subMonths(now, 1));
-        break;
-      case "custom":
-        // Don't set any dates, just show the calendar
-        return;
-      default:
-        return;
-    }
-
-    onDateRangeChange({
-      start: start.toISOString(),
-      end: end.toISOString(),
-    });
-  };
-
   return (
     <div className="flex items-center gap-4 flex-wrap">
       <Select value={category} onValueChange={onCategoryChange}>
@@ -95,7 +67,7 @@ export function FilterBar({
         </SelectContent>
       </Select>
 
-      <Select onValueChange={handleDateFilterChange} defaultValue="">
+      <Select value={selectedDateFilter} onValueChange={onDateFilterChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Date filter" />
         </SelectTrigger>
@@ -107,44 +79,47 @@ export function FilterBar({
         </SelectContent>
       </Select>
 
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "w-[180px] justify-start text-left font-normal",
-              !dateRange && "text-muted-foreground"
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateRange?.start ? (
-              format(new Date(dateRange.start), "MMM d, yyyy")
-            ) : (
-              <span>Pick a date range</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={dateRange?.start ? new Date(dateRange.start) : new Date()}
-            selected={{
-              from: dateRange?.start ? new Date(dateRange.start) : undefined,
-              to: dateRange?.end ? new Date(dateRange.end) : undefined,
-            }}
-            onSelect={(range) => {
-              if (range?.from && range?.to) {
-                onDateRangeChange({
-                  start: range.from.toISOString(),
-                  end: range.to.toISOString(),
-                });
-              }
-            }}
-            numberOfMonths={2}
-          />
-        </PopoverContent>
-      </Popover>
+      {selectedDateFilter === "custom" && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-[180px] justify-start text-left font-normal",
+                !dateRange && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateRange?.start ? (
+                format(new Date(dateRange.start), "MMM d, yyyy")
+              ) : (
+                <span>Pick a date range</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange?.start ? new Date(dateRange.start) : new Date()}
+              selected={{
+                from: dateRange?.start ? new Date(dateRange.start) : undefined,
+                to: dateRange?.end ? new Date(dateRange.end) : undefined,
+              }}
+              onSelect={(range) => {
+                if (range?.from && range?.to) {
+                  onDateRangeChange({
+                    start: range.from.toISOString(),
+                    end: range.to.toISOString(),
+                  });
+                }
+              }}
+              numberOfMonths={2}
+              className="dark:bg-background dark:text-foreground"
+            />
+          </PopoverContent>
+        </Popover>
+      )}
 
       <Button variant="outline" onClick={onClear}>
         Clear filters

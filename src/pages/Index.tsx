@@ -6,8 +6,10 @@ import { Header } from "@/components/Header";
 import { FiltersSection } from "@/components/FiltersSection";
 import { ReleaseList } from "@/components/ReleaseList";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 export default function Index() {
   const [releases, setReleases] = useState<ReleaseNote[]>(initialReleases);
@@ -21,6 +23,8 @@ export default function Index() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
+  const [selectedDateFilter, setSelectedDateFilter] = useState("all");
+  const { toast } = useToast();
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
     if (updatedRelease.id) {
@@ -34,9 +38,47 @@ export default function Index() {
     } else {
       const newRelease = {
         ...updatedRelease,
-        id: crypto.randomUUID(),
+        id: `release-${Date.now()}`,
       } as ReleaseNote;
       setReleases(prev => [newRelease, ...prev]);
+    }
+    toast({
+      title: updatedRelease.id ? "Release updated" : "Release created",
+      description: `Successfully ${updatedRelease.id ? "updated" : "created"} the release note.`,
+    });
+  };
+
+  const handleDateFilterChange = (value: string) => {
+    setSelectedDateFilter(value);
+    const now = new Date();
+    let start: Date;
+    let end: Date;
+
+    switch (value) {
+      case "today":
+        start = startOfDay(now);
+        end = endOfDay(now);
+        break;
+      case "currentMonth":
+        start = startOfMonth(now);
+        end = endOfMonth(now);
+        break;
+      case "lastMonth":
+        start = startOfMonth(subMonths(now, 1));
+        end = endOfMonth(subMonths(now, 1));
+        break;
+      case "custom":
+        return;
+      default:
+        setDateRange({ start: "", end: "" });
+        return;
+    }
+
+    if (start && end) {
+      setDateRange({
+        start: start.toISOString(),
+        end: end.toISOString(),
+      });
     }
   };
 
@@ -81,11 +123,14 @@ export default function Index() {
           onCategoryChange={setCategory}
           onSortChange={setSortOrder}
           onDateRangeChange={setDateRange}
+          selectedDateFilter={selectedDateFilter}
+          onDateFilterChange={handleDateFilterChange}
           onClear={() => {
             setSearch("");
             setCategory("all");
             setSortOrder("desc");
             setDateRange({ start: "", end: "" });
+            setSelectedDateFilter("all");
           }}
         />
 
