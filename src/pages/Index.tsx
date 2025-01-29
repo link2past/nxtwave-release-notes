@@ -119,11 +119,11 @@ export default function Index() {
           category={category}
           sortOrder={sortOrder}
           dateRange={dateRange}
+          selectedDateFilter={selectedDateFilter}
           onSearchChange={setSearch}
           onCategoryChange={setCategory}
           onSortChange={setSortOrder}
           onDateRangeChange={setDateRange}
-          selectedDateFilter={selectedDateFilter}
           onDateFilterChange={handleDateFilterChange}
           onClear={() => {
             setSearch("");

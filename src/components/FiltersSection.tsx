@@ -9,10 +9,12 @@ interface FiltersSectionProps {
     start: string;
     end: string;
   };
+  selectedDateFilter: string;
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onSortChange: (value: "asc" | "desc") => void;
   onDateRangeChange: (range: { start: string; end: string }) => void;
+  onDateFilterChange: (value: string) => void;
   onClear: () => void;
 }
 
@@ -21,10 +23,12 @@ export function FiltersSection({
   category,
   sortOrder,
   dateRange,
+  selectedDateFilter,
   onSearchChange,
   onCategoryChange,
   onSortChange,
   onDateRangeChange,
+  onDateFilterChange,
   onClear,
 }: FiltersSectionProps) {
   return (
@@ -34,9 +38,11 @@ export function FiltersSection({
         category={category}
         sortOrder={sortOrder}
         dateRange={dateRange}
+        selectedDateFilter={selectedDateFilter}
         onCategoryChange={onCategoryChange}
         onSortChange={onSortChange}
         onDateRangeChange={onDateRangeChange}
+        onDateFilterChange={onDateFilterChange}
         onClear={onClear}
       />
     </div>
