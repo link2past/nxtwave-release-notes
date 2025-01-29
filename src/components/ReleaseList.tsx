@@ -29,15 +29,8 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick }: Release
         >
           <div className="flex-1 cursor-pointer">
             <ReleaseCard 
-              release={release} 
-              onEdit={() => {
-                if (role === 'admin') {
-                  const dialogElement = document.querySelector('[data-dialog-edit]');
-                  if (dialogElement) {
-                    (dialogElement as HTMLButtonElement).click();
-                  }
-                }
-              }} 
+              release={release}
+              onClick={() => onReleaseClick(release)}
             />
           </div>
           {role === 'admin' && (
