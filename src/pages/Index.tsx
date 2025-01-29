@@ -202,20 +202,20 @@ export default function Index() {
         </Dialog>
 
         <Dialog open={!!maximizedMedia} onOpenChange={() => setMaximizedMedia(null)}>
-          <DialogContent className="max-w-[90vw] max-h-[90vh]">
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
             {maximizedMedia && (
-              <div className="relative">
+              <div className="relative w-full h-full flex items-center justify-center">
                 {maximizedMedia.type === 'image' ? (
                   <img 
                     src={maximizedMedia.url}
                     alt=""
-                    className="w-full h-full object-contain"
+                    className="max-w-full max-h-[85vh] object-contain"
                   />
                 ) : (
                   <video 
                     src={maximizedMedia.url}
                     controls
-                    className="w-full h-full"
+                    className="max-w-full max-h-[85vh]"
                   />
                 )}
               </div>

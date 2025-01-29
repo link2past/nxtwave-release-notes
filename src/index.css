@@ -74,4 +74,26 @@
   body {
     @apply bg-background text-foreground transition-colors duration-300;
   }
+
+  .dark {
+    .react-calendar {
+      @apply bg-background text-foreground border-border;
+      
+      button {
+        @apply text-foreground hover:bg-muted;
+        
+        &:disabled {
+          @apply text-muted-foreground;
+        }
+      }
+      
+      .react-calendar__tile--active {
+        @apply bg-primary text-primary-foreground;
+      }
+      
+      .react-calendar__tile--now {
+        @apply bg-accent text-accent-foreground;
+      }
+    }
+  }
 }

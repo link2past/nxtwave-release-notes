@@ -41,16 +41,9 @@ interface ReleaseCardProps {
 export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
   const { role } = useUserRole();
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onEdit) {
-      onEdit();
-    }
-  };
-
   return (
     <div 
-      className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm"
+      className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm cursor-pointer"
       onClick={onClick}
     >
       <div className="flex items-center justify-between mb-4">
@@ -65,12 +58,17 @@ export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
           </time>
         </div>
         {role === "admin" && onEdit && (
-          <button
-            onClick={handleEditClick}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             Edit
-          </button>
+          </Button>
         )}
       </div>
       <h3 className="text-xl font-semibold mb-3 text-card-foreground">{release.title}</h3>

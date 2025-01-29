@@ -71,7 +71,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
       datetime: new Date(values.datetime).toISOString(),
       id: release?.id || `release-${Date.now()}`,
       media: values.media?.map(m => ({
-        type: m.type,
+        type: m.type as "image" | "video",
         url: m.url
       }))
     };
@@ -181,7 +181,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
                 accept="image/*,video/*"
                 multiple
                 onChange={handleMediaUpload}
-                className="cursor-pointer"
+                className="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
               />
             </FormItem>
             <Button type="submit" className="w-full">
