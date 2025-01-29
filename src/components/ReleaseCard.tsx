@@ -1,6 +1,8 @@
 import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { Button } from "@/components/ui/button";
+import { MediaDisplay } from "./MediaDisplay";
+import { TagList } from "./TagList";
 
 export interface Tag {
   id: string;
@@ -78,41 +80,9 @@ export function ReleaseCard({ release, onEdit, onClick }: ReleaseCardProps) {
         dangerouslySetInnerHTML={{ __html: release.description }}
       />
       {release.media && release.media.length > 0 && (
-        <div className="mb-4 space-y-2">
-          {release.media.map((item, index) => (
-            item.type === 'image' ? (
-              <img 
-                key={index}
-                src={item.url}
-                alt=""
-                className="rounded-md max-h-48 object-cover"
-              />
-            ) : (
-              <video 
-                key={index}
-                src={item.url}
-                controls
-                className="rounded-md max-h-48 w-full"
-              />
-            )
-          ))}
-        </div>
+        <MediaDisplay media={release.media} />
       )}
-      <div className="flex flex-wrap gap-2">
-        {release.tags.map((tag) => (
-          <span
-            key={tag.id}
-            className="px-3 py-1 text-xs rounded-full transition-colors duration-200 hover:opacity-80"
-            style={{ 
-              backgroundColor: `${tag.color}20`, 
-              color: tag.color,
-              boxShadow: `0 1px 2px ${tag.color}10`
-            }}
-          >
-            {tag.name}
-          </span>
-        ))}
-      </div>
+      <TagList tags={release.tags} />
     </div>
   );
 }
