@@ -72,6 +72,7 @@ export function FilterBar({
           <SelectValue placeholder="Date filter" />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="all">All Time</SelectItem>
           <SelectItem value="today">Today</SelectItem>
           <SelectItem value="currentMonth">Current Month</SelectItem>
           <SelectItem value="lastMonth">Last Month</SelectItem>
@@ -115,7 +116,7 @@ export function FilterBar({
                 }
               }}
               numberOfMonths={2}
-              className="dark:bg-background dark:text-foreground"
+              className="dark:bg-background dark:text-foreground dark:border-border"
             />
           </PopoverContent>
         </Popover>

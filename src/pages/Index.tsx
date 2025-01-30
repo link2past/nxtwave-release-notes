@@ -23,7 +23,7 @@ export default function Index() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
-  const [selectedDateFilter, setSelectedDateFilter] = useState("all");
+  const [selectedDateFilter, setSelectedDateFilter] = useState("all"); // Set default value
   const { toast } = useToast();
 
   const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
@@ -42,10 +42,15 @@ export default function Index() {
       } as ReleaseNote;
       setReleases(prev => [newRelease, ...prev]);
     }
+    
+    // Add toast notification
     toast({
       title: updatedRelease.id ? "Release updated" : "Release created",
       description: `Successfully ${updatedRelease.id ? "updated" : "created"} the release note.`,
     });
+
+    // Force a re-render by updating the state
+    setReleases(prev => [...prev]);
   };
 
   const handleDateFilterChange = (value: string) => {
