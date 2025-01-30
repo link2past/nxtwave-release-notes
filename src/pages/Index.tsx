@@ -40,6 +40,8 @@ export default function Index() {
         ...updatedRelease,
         id: `release-${Date.now()}`,
       } as ReleaseNote;
+      
+      // Add new release at the beginning of the array
       setReleases(prev => [newRelease, ...prev]);
     }
     

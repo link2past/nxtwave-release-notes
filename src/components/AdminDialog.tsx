@@ -57,31 +57,44 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
     }
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const tags = values.tags.split(",").map((tag, index) => ({
-      id: release?.tags[index]?.id || `new-${index}`,
-      name: tag.trim(),
-      color: release?.tags[index]?.color || "#2563eb",
-    }));
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const tags = values.tags.split(",").map((tag, index) => ({
+        id: release?.tags[index]?.id || `new-${index}`,
+        name: tag.trim(),
+        color: release?.tags[index]?.color || "#2563eb",
+      }));
 
-    const updatedRelease: Partial<ReleaseNote> = {
-      ...release,
-      ...values,
-      tags,
-      datetime: new Date(values.datetime).toISOString(),
-      id: release?.id || `release-${Date.now()}`,
-      media: values.media?.map(m => ({
-        type: m.type as "image" | "video",
-        url: m.url
-      }))
-    };
+      const updatedRelease: Partial<ReleaseNote> = {
+        ...release,
+        ...values,
+        tags,
+        datetime: new Date(values.datetime).toISOString(),
+        id: release?.id || `release-${Date.now()}`,
+        media: values.media?.map(m => ({
+          type: m.type as "image" | "video",
+          url: m.url
+        }))
+      };
 
-    onSave(updatedRelease);
-    setOpen(false);
-    toast({
-      title: release ? "Release updated" : "Release created",
-      description: `Successfully ${release ? "updated" : "created"} the release note.`,
-    });
+      await onSave(updatedRelease);
+      
+      // Reset form and close dialog
+      form.reset();
+      setOpen(false);
+      
+      toast({
+        title: release ? "Release updated" : "Release created",
+        description: `Successfully ${release ? "updated" : "created"} the release note.`,
+      });
+    } catch (error) {
+      console.error('Error saving release:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save the release note. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
