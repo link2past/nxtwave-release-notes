@@ -26,33 +26,43 @@ export default function Index() {
   const [selectedDateFilter, setSelectedDateFilter] = useState("all"); // Set default value
   const { toast } = useToast();
 
-  const handleSaveRelease = (updatedRelease: Partial<ReleaseNote>) => {
-    if (updatedRelease.id) {
-      setReleases(prev =>
-        prev.map(release =>
-          release.id === updatedRelease.id
-            ? { ...release, ...updatedRelease } as ReleaseNote
-            : release
-        )
-      );
-    } else {
-      const newRelease = {
-        ...updatedRelease,
-        id: `release-${Date.now()}`,
-      } as ReleaseNote;
+  const handleSaveRelease = async (updatedRelease: Partial<ReleaseNote>) => {
+    try {
+      if (updatedRelease.id) {
+        setReleases(prev =>
+          prev.map(release =>
+            release.id === updatedRelease.id
+              ? { ...release, ...updatedRelease } as ReleaseNote
+              : release
+          )
+        );
+      } else {
+        const newRelease = {
+          ...updatedRelease,
+          id: `release-${Date.now()}`,
+        } as ReleaseNote;
+        
+        setReleases(prevReleases => [newRelease, ...prevReleases]);
+      }
       
-      // Add new release at the beginning of the array
-      setReleases(prev => [newRelease, ...prev]);
-    }
-    
-    // Add toast notification
-    toast({
-      title: updatedRelease.id ? "Release updated" : "Release created",
-      description: `Successfully ${updatedRelease.id ? "updated" : "created"} the release note.`,
-    });
+      // Force a re-render
+      setCurrentPage(1); // Reset to first page to show new release
+      
+      toast({
+        title: updatedRelease.id ? "Release updated" : "Release created",
+        description: `Successfully ${updatedRelease.id ? "updated" : "created"} the release note.`,
+      });
 
-    // Force a re-render by updating the state
-    setReleases(prev => [...prev]);
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error saving release:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save the release note. Please try again.",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    }
   };
 
   const handleDateFilterChange = (value: string) => {
