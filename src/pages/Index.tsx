@@ -23,36 +23,42 @@ export default function Index() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
-  const [selectedDateFilter, setSelectedDateFilter] = useState("all"); // Set default value
+  const [selectedDateFilter, setSelectedDateFilter] = useState("all");
   const { toast } = useToast();
 
   const handleSaveRelease = async (updatedRelease: Partial<ReleaseNote>) => {
     try {
+      let updatedReleases: ReleaseNote[];
+      
       if (updatedRelease.id) {
-        setReleases(prev =>
-          prev.map(release =>
-            release.id === updatedRelease.id
-              ? { ...release, ...updatedRelease } as ReleaseNote
-              : release
-          )
+        // Update existing release
+        updatedReleases = releases.map(release =>
+          release.id === updatedRelease.id
+            ? { ...release, ...updatedRelease } as ReleaseNote
+            : release
         );
       } else {
+        // Create new release
         const newRelease = {
           ...updatedRelease,
           id: `release-${Date.now()}`,
         } as ReleaseNote;
         
-        setReleases(prevReleases => [newRelease, ...prevReleases]);
+        updatedReleases = [newRelease, ...releases];
       }
       
-      // Force a re-render
-      setCurrentPage(1); // Reset to first page to show new release
+      // Update state with new releases array
+      setReleases(updatedReleases);
+      
+      // Reset to first page to show new/updated release
+      setCurrentPage(1);
       
       toast({
         title: updatedRelease.id ? "Release updated" : "Release created",
         description: `Successfully ${updatedRelease.id ? "updated" : "created"} the release note.`,
       });
 
+      // Return resolved promise to indicate success
       return Promise.resolve();
     } catch (error) {
       console.error('Error saving release:', error);
