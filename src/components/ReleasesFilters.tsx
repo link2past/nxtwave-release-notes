@@ -11,7 +11,7 @@ interface ReleasesFiltersProps {
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onSortChange: (value: "asc" | "desc") => void;
-  onDateRangeChange: (value: DateRange | undefined) => void;
+  onDateRangeChange: (range: DateRange | undefined) => void;
   onDateFilterChange: (value: string) => void;
   onClear: () => void;
 }

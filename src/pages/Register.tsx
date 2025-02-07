@@ -4,53 +4,59 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { useUserRole } from "@/contexts/UserRoleContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
-  const { setRole } = useUserRole();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username,
+          },
+        },
       });
 
-      if (signInError) throw signInError;
+      if (signUpError) throw signUpError;
 
-      if (signInData.user) {
-        // Check if user is admin
-        const { data: roleData, error: roleError } = await supabase
+      if (signUpData.user) {
+        // Create profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([{ id: signUpData.user.id, username }]);
+
+        if (profileError) throw profileError;
+
+        // Set default user role
+        const { error: roleError } = await supabase
           .from('user_roles')
-          .select('role')
-          .eq('user_id', signInData.user.id)
-          .single();
+          .insert([{ user_id: signUpData.user.id, role: 'user' }]);
 
         if (roleError) throw roleError;
 
-        const userRole = roleData?.role || 'user';
-        setRole(userRole);
-
         toast({
-          title: `Welcome ${userRole === 'admin' ? 'Admin' : ''}!`,
-          description: "You have successfully logged in.",
+          title: "Registration successful!",
+          description: "Please check your email to verify your account.",
         });
-        navigate("/");
+        navigate("/login");
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to login. Please try again.",
+        description: error.message || "Registration failed. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -63,13 +69,26 @@ export default function Login() {
       <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg border border-border/50">
         <div className="text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Login
+            Register
           </h1>
-          <p className="mt-2 text-muted-foreground">Sign in to continue</p>
+          <p className="mt-2 text-muted-foreground">Create your account</p>
         </div>
 
-        <form onSubmit={handleLogin} className="mt-8 space-y-6">
+        <form onSubmit={handleRegister} className="mt-8 space-y-6">
           <div className="space-y-4">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-foreground">
+                Username
+              </label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+              />
+            </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground">
                 Email
@@ -99,14 +118,14 @@ export default function Login() {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Registering..." : "Register"}
           </Button>
 
           <div className="text-sm text-center">
             <p className="text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:underline">
-                Register
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary hover:underline">
+                Sign in
               </Link>
             </p>
           </div>
