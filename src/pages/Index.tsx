@@ -53,7 +53,10 @@ export default function Index() {
         datetime: release.datetime,
         category: release.category as "feature" | "bugfix" | "enhancement",
         tags: release.release_tags.map(rt => rt.tags),
-        media: release.media
+        media: release.media ? release.media.map(m => ({
+          type: m.type as "image" | "video",
+          url: m.url
+        })) : undefined
       }));
 
       console.log('Fetched releases:', transformedReleases);
