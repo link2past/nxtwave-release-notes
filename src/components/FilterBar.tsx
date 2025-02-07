@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,17 +16,15 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 interface FilterBarProps {
   category: string;
   sortOrder: "asc" | "desc";
-  dateRange: {
-    start: string;
-    end: string;
-  };
+  dateRange: DateRange | undefined;
   onCategoryChange: (value: string) => void;
   onSortChange: (value: "asc" | "desc") => void;
-  onDateRangeChange: (range: { start: string; end: string }) => void;
+  onDateRangeChange: (range: DateRange | undefined) => void;
   onClear: () => void;
   selectedDateFilter: string;
   onDateFilterChange: (value: string) => void;
@@ -91,8 +90,8 @@ export function FilterBar({
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateRange?.start ? (
-                format(new Date(dateRange.start), "MMM d, yyyy")
+              {dateRange?.from ? (
+                format(dateRange.from, "MMM d, yyyy")
               ) : (
                 <span>Pick a date range</span>
               )}
@@ -102,19 +101,9 @@ export function FilterBar({
             <Calendar
               initialFocus
               mode="range"
-              defaultMonth={dateRange?.start ? new Date(dateRange.start) : new Date()}
-              selected={{
-                from: dateRange?.start ? new Date(dateRange.start) : undefined,
-                to: dateRange?.end ? new Date(dateRange.end) : undefined,
-              }}
-              onSelect={(range) => {
-                if (range?.from && range?.to) {
-                  onDateRangeChange({
-                    start: range.from.toISOString(),
-                    end: range.to.toISOString(),
-                  });
-                }
-              }}
+              defaultMonth={dateRange?.from ? dateRange.from : new Date()}
+              selected={dateRange}
+              onSelect={onDateRangeChange}
               numberOfMonths={2}
               className="dark:bg-background dark:text-foreground dark:border-border"
             />

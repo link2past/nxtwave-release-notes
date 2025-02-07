@@ -8,6 +8,7 @@ import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths } from "date-
 import { useReleases } from "@/hooks/useReleases";
 import { ReleasesFilters } from "@/components/ReleasesFilters";
 import { ReleaseModals } from "@/components/ReleaseModals";
+import { DateRange } from "react-day-picker";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -17,10 +18,7 @@ export default function Index() {
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedRelease, setSelectedRelease] = useState<ReleaseNote | null>(null);
-  const [dateRange, setDateRange] = useState({
-    start: "",
-    end: "",
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
   const [selectedDateFilter, setSelectedDateFilter] = useState("all");
@@ -32,8 +30,8 @@ export default function Index() {
   const handleDateFilterChange = (value: string) => {
     setSelectedDateFilter(value);
     const now = new Date();
-    let start: Date;
-    let end: Date;
+    let start: Date | undefined;
+    let end: Date | undefined;
 
     switch (value) {
       case "today":
@@ -51,15 +49,12 @@ export default function Index() {
       case "custom":
         return;
       default:
-        setDateRange({ start: "", end: "" });
+        setDateRange(undefined);
         return;
     }
 
     if (start && end) {
-      setDateRange({
-        start: start.toISOString(),
-        end: end.toISOString(),
-      });
+      setDateRange({ from: start, to: end });
     }
   };
 
@@ -73,8 +68,8 @@ export default function Index() {
       const matchesCategory = category === "all" || release.category === category;
 
       const matchesDateRange = 
-        (!dateRange.start || new Date(release.datetime) >= new Date(dateRange.start)) &&
-        (!dateRange.end || new Date(release.datetime) <= new Date(dateRange.end));
+        !dateRange?.from || new Date(release.datetime) >= dateRange.from &&
+        !dateRange?.to || new Date(release.datetime) <= dateRange.to;
 
       return matchesSearch && matchesCategory && matchesDateRange;
     })
@@ -110,7 +105,7 @@ export default function Index() {
             setSearch("");
             setCategory("all");
             setSortOrder("desc");
-            setDateRange({ start: "", end: "" });
+            setDateRange(undefined);
             setSelectedDateFilter("all");
           }}
         />
