@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { type ReleaseNote } from "@/components/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,11 +8,12 @@ import { ReleaseList } from "@/components/ReleaseList";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ITEMS_PER_PAGE = 8;
 
 export default function Index() {
-  const [releases, setReleases] = useState<ReleaseNote[]>(initialReleases);
+  const [releases, setReleases] = useState<ReleaseNote[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -26,39 +27,167 @@ export default function Index() {
   const [selectedDateFilter, setSelectedDateFilter] = useState("all");
   const { toast } = useToast();
 
+  useEffect(() => {
+    fetchReleases();
+  }, []);
+
+  const fetchReleases = async () => {
+    try {
+      const { data: releasesData, error: releasesError } = await supabase
+        .from('releases')
+        .select(`
+          id,
+          title,
+          description,
+          datetime,
+          category,
+          media (
+            type,
+            url
+          ),
+          release_tags (
+            tags (
+              id,
+              name,
+              color
+            )
+          )
+        `);
+
+      if (releasesError) throw releasesError;
+
+      const transformedReleases: ReleaseNote[] = releasesData.map(release => ({
+        id: release.id,
+        title: release.title,
+        description: release.description,
+        datetime: release.datetime,
+        category: release.category as "feature" | "bugfix" | "enhancement",
+        tags: release.release_tags.map(rt => rt.tags),
+        media: release.media?.map(m => ({
+          type: m.type as "image" | "video",
+          url: m.url
+        }))
+      }));
+
+      setReleases(transformedReleases);
+    } catch (error) {
+      console.error('Error fetching releases:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch releases. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSaveRelease = async (updatedRelease: Partial<ReleaseNote>) => {
     try {
-      let updatedReleases: ReleaseNote[];
-      
       if (updatedRelease.id) {
-        // Update existing release
-        updatedReleases = releases.map(release =>
-          release.id === updatedRelease.id
-            ? { ...release, ...updatedRelease } as ReleaseNote
-            : release
-        );
+        const { error: updateError } = await supabase
+          .from('releases')
+          .update({
+            title: updatedRelease.title,
+            description: updatedRelease.description,
+            category: updatedRelease.category,
+            datetime: updatedRelease.datetime
+          })
+          .eq('id', updatedRelease.id);
+
+        if (updateError) throw updateError;
+
+        if (updatedRelease.tags) {
+          await supabase
+            .from('release_tags')
+            .delete()
+            .eq('release_id', updatedRelease.id);
+
+          for (const tag of updatedRelease.tags) {
+            const { data: tagData, error: tagError } = await supabase
+              .from('tags')
+              .upsert({ name: tag.name, color: tag.color })
+              .select()
+              .single();
+
+            if (tagError) throw tagError;
+
+            await supabase
+              .from('release_tags')
+              .insert({
+                release_id: updatedRelease.id,
+                tag_id: tagData.id
+              });
+          }
+        }
+
+        if (updatedRelease.media) {
+          await supabase
+            .from('media')
+            .delete()
+            .eq('release_id', updatedRelease.id);
+
+          for (const media of updatedRelease.media) {
+            await supabase
+              .from('media')
+              .insert({
+                release_id: updatedRelease.id,
+                type: media.type,
+                url: media.url
+              });
+          }
+        }
       } else {
-        // Create new release
-        const newRelease = {
-          ...updatedRelease,
-          id: `release-${Date.now()}`,
-        } as ReleaseNote;
-        
-        updatedReleases = [newRelease, ...releases];
+        const { data: newRelease, error: insertError } = await supabase
+          .from('releases')
+          .insert({
+            title: updatedRelease.title,
+            description: updatedRelease.description,
+            category: updatedRelease.category,
+            datetime: updatedRelease.datetime || new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+
+        if (updatedRelease.tags) {
+          for (const tag of updatedRelease.tags) {
+            const { data: tagData, error: tagError } = await supabase
+              .from('tags')
+              .upsert({ name: tag.name, color: tag.color })
+              .select()
+              .single();
+
+            if (tagError) throw tagError;
+
+            await supabase
+              .from('release_tags')
+              .insert({
+                release_id: newRelease.id,
+                tag_id: tagData.id
+              });
+          }
+        }
+
+        if (updatedRelease.media) {
+          for (const media of updatedRelease.media) {
+            await supabase
+              .from('media')
+              .insert({
+                release_id: newRelease.id,
+                type: media.type,
+                url: media.url
+              });
+          }
+        }
       }
-      
-      // Update state with new releases array
-      setReleases(updatedReleases);
-      
-      // Reset to first page to show new/updated release
-      setCurrentPage(1);
+
+      await fetchReleases();
       
       toast({
         title: updatedRelease.id ? "Release updated" : "Release created",
         description: `Successfully ${updatedRelease.id ? "updated" : "created"} the release note.`,
       });
 
-      // Return resolved promise to indicate success
       return Promise.resolve();
     } catch (error) {
       console.error('Error saving release:', error);
