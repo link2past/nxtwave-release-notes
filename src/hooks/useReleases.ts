@@ -50,49 +50,49 @@ export function useReleases() {
 
   const handleSaveRelease = async (updatedRelease: Partial<ReleaseNote>) => {
     try {
-      let releaseId = updatedRelease.id;
+      // Insert or update the release
+      const releaseData = {
+        title: updatedRelease.title,
+        description: updatedRelease.description,
+        category: updatedRelease.category,
+        datetime: updatedRelease.datetime
+      };
+
+      let releaseId: string;
       
-      // Handle release upsert
-      if (releaseId) {
+      if (updatedRelease.id && !updatedRelease.id.startsWith('new-')) {
+        // Update existing release
         const { error: updateError } = await supabase
           .from('releases')
-          .update({
-            title: updatedRelease.title,
-            description: updatedRelease.description,
-            category: updatedRelease.category,
-            datetime: updatedRelease.datetime
-          })
-          .eq('id', releaseId);
+          .update(releaseData)
+          .eq('id', updatedRelease.id);
 
         if (updateError) throw updateError;
+        releaseId = updatedRelease.id;
       } else {
+        // Insert new release
         const { data: newRelease, error: insertError } = await supabase
           .from('releases')
-          .insert({
-            title: updatedRelease.title,
-            description: updatedRelease.description,
-            category: updatedRelease.category,
-            datetime: updatedRelease.datetime
-          })
+          .insert(releaseData)
           .select()
           .single();
 
         if (insertError) throw insertError;
+        if (!newRelease) throw new Error('No release was created');
         releaseId = newRelease.id;
       }
 
       // Handle tags
       if (updatedRelease.tags) {
         // Delete existing release tags
-        if (releaseId) {
-          await supabase
-            .from('release_tags')
-            .delete()
-            .eq('release_id', releaseId);
-        }
+        await supabase
+          .from('release_tags')
+          .delete()
+          .eq('release_id', releaseId);
 
         // Insert new tags and release_tags
         for (const tag of updatedRelease.tags) {
+          // Insert or update tag
           const { data: tagData, error: tagError } = await supabase
             .from('tags')
             .upsert({ 
@@ -104,7 +104,9 @@ export function useReleases() {
             .single();
 
           if (tagError) throw tagError;
+          if (!tagData) throw new Error('No tag was created');
 
+          // Create release-tag relationship
           const { error: releaseTagError } = await supabase
             .from('release_tags')
             .insert({
@@ -118,13 +120,13 @@ export function useReleases() {
 
       // Handle media
       if (updatedRelease.media) {
-        if (releaseId) {
-          await supabase
-            .from('media')
-            .delete()
-            .eq('release_id', releaseId);
-        }
+        // Delete existing media
+        await supabase
+          .from('media')
+          .delete()
+          .eq('release_id', releaseId);
 
+        // Insert new media
         const mediaInserts = updatedRelease.media.map(media => ({
           release_id: releaseId,
           type: media.type,

@@ -70,7 +70,6 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
         ...values,
         tags,
         datetime: new Date(values.datetime).toISOString(),
-        id: release?.id || `release-${Date.now()}`,
         media: values.media?.map(m => ({
           type: m.type as "image" | "video",
           url: m.url
@@ -79,7 +78,6 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
 
       await onSave(updatedRelease);
       
-      // Reset form and close dialog
       form.reset();
       setOpen(false);
       
