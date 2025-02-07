@@ -36,21 +36,11 @@ export default function Index() {
       const { data: releasesData, error: releasesError } = await supabase
         .from('releases')
         .select(`
-          id,
-          title,
-          description,
-          datetime,
-          category,
-          media (
-            type,
-            url
-          ),
+          *,
+          media (*),
           release_tags (
-            tags (
-              id,
-              name,
-              color
-            )
+            tag_id,
+            tags (*)
           )
         `);
 
@@ -63,12 +53,10 @@ export default function Index() {
         datetime: release.datetime,
         category: release.category as "feature" | "bugfix" | "enhancement",
         tags: release.release_tags.map(rt => rt.tags),
-        media: release.media?.map(m => ({
-          type: m.type as "image" | "video",
-          url: m.url
-        }))
+        media: release.media
       }));
 
+      console.log('Fetched releases:', transformedReleases);
       setReleases(transformedReleases);
     } catch (error) {
       console.error('Error fetching releases:', error);
@@ -104,18 +92,20 @@ export default function Index() {
           for (const tag of updatedRelease.tags) {
             const { data: tagData, error: tagError } = await supabase
               .from('tags')
-              .upsert({ name: tag.name, color: tag.color })
+              .upsert({ id: tag.id, name: tag.name, color: tag.color })
               .select()
               .single();
 
             if (tagError) throw tagError;
 
-            await supabase
+            const { error: releaseTagError } = await supabase
               .from('release_tags')
               .insert({
                 release_id: updatedRelease.id,
                 tag_id: tagData.id
               });
+
+            if (releaseTagError) throw releaseTagError;
           }
         }
 
@@ -125,15 +115,17 @@ export default function Index() {
             .delete()
             .eq('release_id', updatedRelease.id);
 
-          for (const media of updatedRelease.media) {
-            await supabase
-              .from('media')
-              .insert({
-                release_id: updatedRelease.id,
-                type: media.type,
-                url: media.url
-              });
-          }
+          const mediaInserts = updatedRelease.media.map(media => ({
+            release_id: updatedRelease.id,
+            type: media.type,
+            url: media.url
+          }));
+
+          const { error: mediaError } = await supabase
+            .from('media')
+            .insert(mediaInserts);
+
+          if (mediaError) throw mediaError;
         }
       } else {
         const { data: newRelease, error: insertError } = await supabase
@@ -142,7 +134,7 @@ export default function Index() {
             title: updatedRelease.title,
             description: updatedRelease.description,
             category: updatedRelease.category,
-            datetime: updatedRelease.datetime || new Date().toISOString()
+            datetime: updatedRelease.datetime
           })
           .select()
           .single();
@@ -159,25 +151,29 @@ export default function Index() {
 
             if (tagError) throw tagError;
 
-            await supabase
+            const { error: releaseTagError } = await supabase
               .from('release_tags')
               .insert({
                 release_id: newRelease.id,
                 tag_id: tagData.id
               });
+
+            if (releaseTagError) throw releaseTagError;
           }
         }
 
         if (updatedRelease.media) {
-          for (const media of updatedRelease.media) {
-            await supabase
-              .from('media')
-              .insert({
-                release_id: newRelease.id,
-                type: media.type,
-                url: media.url
-              });
-          }
+          const mediaInserts = updatedRelease.media.map(media => ({
+            release_id: newRelease.id,
+            type: media.type,
+            url: media.url
+          }));
+
+          const { error: mediaError } = await supabase
+            .from('media')
+            .insert(mediaInserts);
+
+          if (mediaError) throw mediaError;
         }
       }
 
