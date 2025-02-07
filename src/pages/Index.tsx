@@ -1,19 +1,18 @@
+
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
 import { type ReleaseNote } from "@/components/ReleaseCard";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Header } from "@/components/Header";
-import { FiltersSection } from "@/components/FiltersSection";
 import { ReleaseList } from "@/components/ReleaseList";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths } from "date-fns";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useReleases } from "@/hooks/useReleases";
+import { ReleasesFilters } from "@/components/ReleasesFilters";
+import { ReleaseModals } from "@/components/ReleaseModals";
 
 const ITEMS_PER_PAGE = 8;
 
 export default function Index() {
-  const [releases, setReleases] = useState<ReleaseNote[]>([]);
+  const { releases, fetchReleases, handleSaveRelease } = useReleases();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -25,179 +24,10 @@ export default function Index() {
   const [currentPage, setCurrentPage] = useState(1);
   const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
   const [selectedDateFilter, setSelectedDateFilter] = useState("all");
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchReleases();
   }, []);
-
-  const fetchReleases = async () => {
-    try {
-      const { data: releasesData, error: releasesError } = await supabase
-        .from('releases')
-        .select(`
-          *,
-          media (*),
-          release_tags (
-            tag_id,
-            tags (*)
-          )
-        `);
-
-      if (releasesError) throw releasesError;
-
-      const transformedReleases: ReleaseNote[] = releasesData.map(release => ({
-        id: release.id,
-        title: release.title,
-        description: release.description,
-        datetime: release.datetime,
-        category: release.category as "feature" | "bugfix" | "enhancement",
-        tags: release.release_tags.map(rt => rt.tags),
-        media: release.media ? release.media.map(m => ({
-          type: m.type as "image" | "video",
-          url: m.url
-        })) : undefined
-      }));
-
-      console.log('Fetched releases:', transformedReleases);
-      setReleases(transformedReleases);
-    } catch (error) {
-      console.error('Error fetching releases:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch releases. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSaveRelease = async (updatedRelease: Partial<ReleaseNote>) => {
-    try {
-      if (updatedRelease.id) {
-        const { error: updateError } = await supabase
-          .from('releases')
-          .update({
-            title: updatedRelease.title,
-            description: updatedRelease.description,
-            category: updatedRelease.category,
-            datetime: updatedRelease.datetime
-          })
-          .eq('id', updatedRelease.id);
-
-        if (updateError) throw updateError;
-
-        if (updatedRelease.tags) {
-          await supabase
-            .from('release_tags')
-            .delete()
-            .eq('release_id', updatedRelease.id);
-
-          for (const tag of updatedRelease.tags) {
-            const { data: tagData, error: tagError } = await supabase
-              .from('tags')
-              .upsert({ id: tag.id, name: tag.name, color: tag.color })
-              .select()
-              .single();
-
-            if (tagError) throw tagError;
-
-            const { error: releaseTagError } = await supabase
-              .from('release_tags')
-              .insert({
-                release_id: updatedRelease.id,
-                tag_id: tagData.id
-              });
-
-            if (releaseTagError) throw releaseTagError;
-          }
-        }
-
-        if (updatedRelease.media) {
-          await supabase
-            .from('media')
-            .delete()
-            .eq('release_id', updatedRelease.id);
-
-          const mediaInserts = updatedRelease.media.map(media => ({
-            release_id: updatedRelease.id,
-            type: media.type,
-            url: media.url
-          }));
-
-          const { error: mediaError } = await supabase
-            .from('media')
-            .insert(mediaInserts);
-
-          if (mediaError) throw mediaError;
-        }
-      } else {
-        const { data: newRelease, error: insertError } = await supabase
-          .from('releases')
-          .insert({
-            title: updatedRelease.title,
-            description: updatedRelease.description,
-            category: updatedRelease.category,
-            datetime: updatedRelease.datetime
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        if (updatedRelease.tags) {
-          for (const tag of updatedRelease.tags) {
-            const { data: tagData, error: tagError } = await supabase
-              .from('tags')
-              .upsert({ name: tag.name, color: tag.color })
-              .select()
-              .single();
-
-            if (tagError) throw tagError;
-
-            const { error: releaseTagError } = await supabase
-              .from('release_tags')
-              .insert({
-                release_id: newRelease.id,
-                tag_id: tagData.id
-              });
-
-            if (releaseTagError) throw releaseTagError;
-          }
-        }
-
-        if (updatedRelease.media) {
-          const mediaInserts = updatedRelease.media.map(media => ({
-            release_id: newRelease.id,
-            type: media.type,
-            url: media.url
-          }));
-
-          const { error: mediaError } = await supabase
-            .from('media')
-            .insert(mediaInserts);
-
-          if (mediaError) throw mediaError;
-        }
-      }
-
-      await fetchReleases();
-      
-      toast({
-        title: updatedRelease.id ? "Release updated" : "Release created",
-        description: `Successfully ${updatedRelease.id ? "updated" : "created"} the release note.`,
-      });
-
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error saving release:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save the release note. Please try again.",
-        variant: "destructive",
-      });
-      return Promise.reject(error);
-    }
-  };
 
   const handleDateFilterChange = (value: string) => {
     setSelectedDateFilter(value);
@@ -265,7 +95,7 @@ export default function Index() {
       <div className="container py-8 px-4 mx-auto max-w-6xl">
         <Header onSaveRelease={handleSaveRelease} />
         
-        <FiltersSection
+        <ReleasesFilters
           search={search}
           category={category}
           sortOrder={sortOrder}
@@ -322,139 +152,13 @@ export default function Index() {
           </div>
         )}
 
-        <Dialog open={!!selectedRelease} onOpenChange={() => setSelectedRelease(null)}>
-          <DialogContent className="max-w-2xl">
-            {selectedRelease && (
-              <div className="space-y-6">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold">{selectedRelease.title}</DialogTitle>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full shadow-sm ${
-                      selectedRelease.category === 'feature' ? 'bg-emerald-500 text-white' :
-                      selectedRelease.category === 'bugfix' ? 'bg-red-500 text-white' :
-                      'bg-purple-500 text-white'
-                    }`}>
-                      {selectedRelease.category.charAt(0).toUpperCase() + selectedRelease.category.slice(1)}
-                    </span>
-                    <time>
-                      Released on {format(new Date(selectedRelease.datetime), "MMMM d, yyyy 'at' HH:mm")}
-                    </time>
-                  </div>
-                </DialogHeader>
-                
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: selectedRelease.description }} />
-                </div>
-
-                {selectedRelease.media && selectedRelease.media.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-semibold">Media</h4>
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                      {selectedRelease.media.map((item, index) => (
-                        <div key={index} className="relative group cursor-pointer" onClick={() => setMaximizedMedia(item)}>
-                          {item.type === 'image' ? (
-                            <img 
-                              src={item.url}
-                              alt=""
-                              className="rounded-md max-h-48 object-cover w-full group-hover:opacity-90 transition-opacity"
-                            />
-                          ) : (
-                            <video 
-                              src={item.url}
-                              controls
-                              className="rounded-md max-h-48 w-full group-hover:opacity-90 transition-opacity"
-                            />
-                          )}
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="bg-black/50 text-white px-3 py-1 rounded-full text-sm">Click to maximize</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-border">
-                  <h4 className="text-sm font-semibold mb-3">Tags</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedRelease.tags.map((tag) => (
-                      <span
-                        key={tag.id}
-                        className="px-3 py-1 text-xs rounded-full transition-colors duration-200"
-                        style={{ 
-                          backgroundColor: `${tag.color}20`, 
-                          color: tag.color,
-                          boxShadow: `0 1px 2px ${tag.color}10`
-                        }}
-                      >
-                        {tag.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={!!maximizedMedia} onOpenChange={() => setMaximizedMedia(null)}>
-          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
-            {maximizedMedia && (
-              <div className="relative w-full h-full flex items-center justify-center">
-                {maximizedMedia.type === 'image' ? (
-                  <img 
-                    src={maximizedMedia.url}
-                    alt=""
-                    className="max-w-full max-h-[85vh] object-contain"
-                  />
-                ) : (
-                  <video 
-                    src={maximizedMedia.url}
-                    controls
-                    className="max-w-full max-h-[85vh]"
-                  />
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        <ReleaseModals
+          selectedRelease={selectedRelease}
+          onCloseRelease={() => setSelectedRelease(null)}
+          maximizedMedia={maximizedMedia}
+          onCloseMedia={() => setMaximizedMedia(null)}
+        />
       </div>
     </div>
   );
 }
-
-const initialReleases: ReleaseNote[] = [
-  {
-    id: "1",
-    title: "New Dashboard Features",
-    description: "Added new analytics widgets and improved performance",
-    datetime: "2024-03-20T10:00:00Z",
-    category: "feature",
-    tags: [
-      { id: "1", name: "dashboard", color: "#2563eb" },
-      { id: "2", name: "analytics", color: "#10b981" },
-    ],
-  },
-  {
-    id: "2",
-    title: "Bug Fix: User Authentication",
-    description: "Fixed issues with social login providers",
-    datetime: "2024-03-19T15:30:00Z",
-    category: "bugfix",
-    tags: [
-      { id: "3", name: "auth", color: "#ef4444" },
-      { id: "4", name: "security", color: "#8b5cf6" },
-    ],
-  },
-  {
-    id: "3",
-    title: "UI Improvements",
-    description: "Enhanced user interface with new animations",
-    datetime: "2024-03-18T09:15:00Z",
-    category: "enhancement",
-    tags: [
-      { id: "5", name: "ui", color: "#f59e0b" },
-      { id: "6", name: "animations", color: "#06b6d4" },
-    ],
-  },
-];
