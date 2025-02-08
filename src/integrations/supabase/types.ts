@@ -166,6 +166,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_new_profile: {
+        Args: {
+          user_id: string
+          user_name: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

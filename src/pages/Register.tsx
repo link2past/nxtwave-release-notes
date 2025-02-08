@@ -28,10 +28,11 @@ export default function Register() {
       if (signUpError) throw signUpError;
 
       if (signUpData.user) {
-        // Insert into profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([{ id: signUpData.user.id, username }]);
+        // Use the security definer function to create profile
+        const { error: profileError } = await supabase.rpc('create_new_profile', {
+          user_id: signUpData.user.id,
+          user_name: username
+        });
 
         if (profileError) throw profileError;
 
