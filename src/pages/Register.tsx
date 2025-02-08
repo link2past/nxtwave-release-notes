@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,6 +14,9 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { type } = useParams();
+
+  const isAdmin = type === 'admin';
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,10 +44,13 @@ export default function Register() {
 
         if (profileError) throw profileError;
 
-        // Set default user role
+        // Set user role
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert([{ user_id: signUpData.user.id, role: 'user' }]);
+          .insert([{ 
+            user_id: signUpData.user.id, 
+            role: isAdmin ? 'admin' : 'user' 
+          }]);
 
         if (roleError) throw roleError;
 
@@ -70,7 +76,7 @@ export default function Register() {
       <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg border border-border/50">
         <div className="text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Register
+            Register as {isAdmin ? 'Admin' : 'User'}
           </h1>
           <p className="mt-2 text-muted-foreground">Create your account</p>
         </div>

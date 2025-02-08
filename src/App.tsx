@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import RegistrationChoice from "@/pages/RegistrationChoice";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function App() {
@@ -17,7 +18,8 @@ function App() {
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/register" element={<RegistrationChoice />} />
+              <Route path="/register/:type" element={<Register />} />
               <Route
                 path="/"
                 element={
