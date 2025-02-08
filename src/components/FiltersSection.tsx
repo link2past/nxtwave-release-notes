@@ -1,19 +1,18 @@
+
 import { SearchBar } from "./SearchBar";
 import { FilterBar } from "./FilterBar";
+import { DateRange } from "react-day-picker";
 
 interface FiltersSectionProps {
   search: string;
   category: string;
   sortOrder: "asc" | "desc";
-  dateRange: {
-    start: string;
-    end: string;
-  };
+  dateRange: DateRange | undefined;
   selectedDateFilter: string;
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onSortChange: (value: "asc" | "desc") => void;
-  onDateRangeChange: (range: { start: string; end: string }) => void;
+  onDateRangeChange: (range: DateRange | undefined) => void;
   onDateFilterChange: (value: string) => void;
   onClear: () => void;
 }
