@@ -20,6 +20,7 @@ export default function Register() {
     setLoading(true);
 
     try {
+      // First, sign up the user with Supabase Auth
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -28,11 +29,15 @@ export default function Register() {
       if (signUpError) throw signUpError;
 
       if (signUpData.user) {
-        // Use the security definer function to create profile
-        const { error: profileError } = await supabase.rpc('create_new_profile', {
-          user_id: signUpData.user.id,
-          user_name: username
-        });
+        // Insert into profiles table
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: signUpData.user.id,
+              username: username
+            }
+          ]);
 
         if (profileError) throw profileError;
 
