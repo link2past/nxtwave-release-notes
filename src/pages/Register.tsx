@@ -23,6 +23,22 @@ export default function Register() {
     setLoading(true);
 
     try {
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .maybeSingle();
+
+      if (existingUser) {
+        toast({
+          title: "Username taken",
+          description: "This username is already in use. Please choose another.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Create new user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -34,7 +50,7 @@ export default function Register() {
       
       const userId = signUpData.user.id;
 
-      // Create profile
+      // Create profile first
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([
@@ -46,13 +62,15 @@ export default function Register() {
 
       if (profileError) throw profileError;
 
-      // Set user role
+      // Then create user role
       const { error: roleError } = await supabase
         .from('user_roles')
-        .insert([{ 
-          user_id: userId, 
-          role: isAdmin ? 'admin' : 'user' 
-        }]);
+        .insert([
+          {
+            user_id: userId,
+            role: isAdmin ? 'admin' : 'user'
+          }
+        ]);
 
       if (roleError) throw roleError;
 
