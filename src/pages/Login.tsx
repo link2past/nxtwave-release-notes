@@ -1,12 +1,11 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { AuthForm } from "@/components/auth/AuthForm";
+import { getUserRole } from "@/utils/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -29,20 +28,7 @@ export default function Login() {
       if (signInError) throw signInError;
 
       if (signInData.user) {
-        // Get user role
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', signInData.user.id)
-          .maybeSingle();
-
-        if (roleError) {
-          console.error("Error fetching user role:", roleError);
-          throw roleError;
-        }
-
-        // If no role is found, default to 'user'
-        const userRole = roleData?.role || 'user';
+        const userRole = await getUserRole(signInData.user.id);
         setRole(userRole);
 
         toast({
@@ -72,49 +58,14 @@ export default function Login() {
           <p className="mt-2 text-muted-foreground">Sign in to continue</p>
         </div>
 
-        <form onSubmit={handleLogin} className="mt-8 space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
-          </Button>
-
-          <div className="text-sm text-center">
-            <p className="text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:underline">
-                Register
-              </Link>
-            </p>
-          </div>
-        </form>
+        <AuthForm
+          email={email}
+          password={password}
+          loading={loading}
+          onSubmit={handleLogin}
+          onEmailChange={(e) => setEmail(e.target.value)}
+          onPasswordChange={(e) => setPassword(e.target.value)}
+        />
       </div>
     </div>
   );

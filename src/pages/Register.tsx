@@ -1,11 +1,10 @@
 
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { RegisterForm } from "@/components/auth/RegisterForm";
+import { checkUsernameExists, createUserProfile, createUserRole } from "@/utils/auth";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -23,40 +22,16 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // First check if email exists
-      const { data: emailCheck, error: emailCheckError } = await supabase.auth.signInWithPassword({
-        email,
-        password: "dummy-password-for-check", // Use a dummy password for the check
-      });
-
-      if (!emailCheckError) {
-        toast({
-          title: "Email already registered",
-          description: "This email is already in use. Please use a different email or login.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Check if username exists
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', username)
-        .maybeSingle();
-
-      if (existingUser) {
+      const usernameExists = await checkUsernameExists(username);
+      if (usernameExists) {
         toast({
           title: "Username taken",
           description: "This username is already in use. Please choose another.",
           variant: "destructive",
         });
-        setLoading(false);
         return;
       }
 
-      // Create new user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -67,29 +42,8 @@ export default function Register() {
       
       const userId = signUpData.user.id;
 
-      // Create profile first
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: userId,
-            username: username
-          }
-        ]);
-
-      if (profileError) throw profileError;
-
-      // Then create user role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([
-          {
-            user_id: userId,
-            role: isAdmin ? 'admin' : 'user'
-          }
-        ]);
-
-      if (roleError) throw roleError;
+      await createUserProfile(userId, username);
+      await createUserRole(userId, isAdmin);
 
       toast({
         title: "Registration successful!",
@@ -97,7 +51,6 @@ export default function Register() {
       });
       navigate("/login");
     } catch (error: any) {
-      // Check for specific error messages
       const errorMessage = error.message;
       if (errorMessage.includes("User already registered")) {
         toast({
@@ -127,62 +80,17 @@ export default function Register() {
           <p className="mt-2 text-muted-foreground">Create your account</p>
         </div>
 
-        <form onSubmit={handleRegister} className="mt-8 space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-foreground">
-                Username
-              </label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Registering..." : "Register"}
-          </Button>
-
-          <div className="text-sm text-center">
-            <p className="text-muted-foreground">
-              Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline">
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </form>
+        <RegisterForm
+          email={email}
+          password={password}
+          username={username}
+          loading={loading}
+          isAdmin={isAdmin}
+          onSubmit={handleRegister}
+          onEmailChange={(e) => setEmail(e.target.value)}
+          onPasswordChange={(e) => setPassword(e.target.value)}
+          onUsernameChange={(e) => setUsername(e.target.value)}
+        />
       </div>
     </div>
   );
