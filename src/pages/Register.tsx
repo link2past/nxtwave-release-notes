@@ -23,43 +23,76 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // First, sign up the user with Supabase Auth
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // First, check if a profile already exists for this email
+      const { data: userData, error: userError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (signUpError) throw signUpError;
-
-      if (signUpData.user) {
-        // Insert into profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: signUpData.user.id,
-              username: username
-            }
-          ]);
-
-        if (profileError) throw profileError;
-
-        // Set user role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert([{ 
-            user_id: signUpData.user.id, 
-            role: isAdmin ? 'admin' : 'user' 
-          }]);
-
-        if (roleError) throw roleError;
-
-        toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account.",
-        });
-        navigate("/login");
+      if (userError && userError.message !== "Invalid login credentials") {
+        throw userError;
       }
+
+      let userId;
+
+      if (userData?.user) {
+        // User exists, check if they have a profile
+        userId = userData.user.id;
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .single();
+
+        if (existingProfile) {
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please login instead.",
+            variant: "destructive",
+          });
+          navigate("/login");
+          return;
+        }
+      } else {
+        // User doesn't exist, create new user
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (signUpError) throw signUpError;
+        if (!signUpData.user) throw new Error("Failed to create user");
+        
+        userId = signUpData.user.id;
+      }
+
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            username: username
+          }
+        ]);
+
+      if (profileError) throw profileError;
+
+      // Set user role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert([{ 
+          user_id: userId, 
+          role: isAdmin ? 'admin' : 'user' 
+        }]);
+
+      if (roleError) throw roleError;
+
+      toast({
+        title: "Registration successful!",
+        description: "Please proceed to login.",
+      });
+      navigate("/login");
     } catch (error: any) {
       toast({
         title: "Error",
