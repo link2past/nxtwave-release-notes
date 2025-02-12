@@ -23,48 +23,16 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // First, check if a profile already exists for this email
-      const { data: userData, error: userError } = await supabase.auth.signInWithPassword({
+      // Create new user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (userError && userError.message !== "Invalid login credentials") {
-        throw userError;
-      }
-
-      let userId;
-
-      if (userData?.user) {
-        // User exists, check if they have a profile
-        userId = userData.user.id;
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', userId)
-          .single();
-
-        if (existingProfile) {
-          toast({
-            title: "Account exists",
-            description: "This email is already registered. Please login instead.",
-            variant: "destructive",
-          });
-          navigate("/login");
-          return;
-        }
-      } else {
-        // User doesn't exist, create new user
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-
-        if (signUpError) throw signUpError;
-        if (!signUpData.user) throw new Error("Failed to create user");
-        
-        userId = signUpData.user.id;
-      }
+      if (signUpError) throw signUpError;
+      if (!signUpData.user) throw new Error("Failed to create user");
+      
+      const userId = signUpData.user.id;
 
       // Create profile
       const { error: profileError } = await supabase

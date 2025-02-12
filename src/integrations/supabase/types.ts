@@ -173,6 +173,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_user_role: {
+        Args: {
+          user_uid: string
+        }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

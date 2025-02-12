@@ -29,17 +29,13 @@ export default function Login() {
       if (signInError) throw signInError;
 
       if (signInData.user) {
-        // Check if user is admin, get first role
+        // Call the secure function to get user role
         const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', signInData.user.id)
-          .limit(1)
-          .maybeSingle();
+          .rpc('get_user_role', { user_uid: signInData.user.id });
 
         if (roleError) throw roleError;
 
-        const userRole = roleData?.role || 'user';
+        const userRole = roleData || 'user';
         setRole(userRole);
 
         toast({
