@@ -23,7 +23,23 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // Check if user already exists
+      // First check if email exists
+      const { data: emailCheck, error: emailCheckError } = await supabase.auth.signInWithPassword({
+        email,
+        password: "dummy-password-for-check", // Use a dummy password for the check
+      });
+
+      if (!emailCheckError) {
+        toast({
+          title: "Email already registered",
+          description: "This email is already in use. Please use a different email or login.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check if username exists
       const { data: existingUser } = await supabase
         .from('profiles')
         .select('id')
@@ -36,6 +52,7 @@ export default function Register() {
           description: "This username is already in use. Please choose another.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -80,11 +97,21 @@ export default function Register() {
       });
       navigate("/login");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Registration failed. Please try again.",
-        variant: "destructive",
-      });
+      // Check for specific error messages
+      const errorMessage = error.message;
+      if (errorMessage.includes("User already registered")) {
+        toast({
+          title: "Email already registered",
+          description: "This email is already in use. Please use a different email or login.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: errorMessage || "Registration failed. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
