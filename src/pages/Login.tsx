@@ -34,10 +34,14 @@ export default function Login() {
           .from('user_roles')
           .select('role')
           .eq('user_id', signInData.user.id)
-          .single();
+          .maybeSingle();
 
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error("Error fetching user role:", roleError);
+          throw roleError;
+        }
 
+        // If no role is found, default to 'user'
         const userRole = roleData?.role || 'user';
         setRole(userRole);
 
