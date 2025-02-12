@@ -29,12 +29,13 @@ export default function Login() {
       if (signInError) throw signInError;
 
       if (signInData.user) {
-        // Check if user is admin
+        // Check if user is admin, get first role
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', signInData.user.id)
-          .single();
+          .limit(1)
+          .maybeSingle();
 
         if (roleError) throw roleError;
 
