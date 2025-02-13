@@ -31,8 +31,8 @@ function App() {
               />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
+            <Toaster />
           </UserRoleProvider>
-          <Toaster />
         </AuthProvider>
       </Router>
     </ThemeProvider>
