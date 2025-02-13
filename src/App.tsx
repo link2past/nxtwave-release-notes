@@ -9,7 +9,6 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import RegistrationChoice from "@/pages/RegistrationChoice";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import "./App.css";
 
 function App() {
   return (
@@ -31,8 +30,8 @@ function App() {
               />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-            <Toaster />
           </UserRoleProvider>
+          <Toaster />
         </AuthProvider>
       </Router>
     </ThemeProvider>
