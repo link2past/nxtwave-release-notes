@@ -13,9 +13,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 function App() {
   return (
     <ThemeProvider defaultTheme="system" enableSystem>
-      <AuthProvider>
-        <UserRoleProvider>
-          <Router>
+      <Router>
+        <AuthProvider>
+          <UserRoleProvider>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<RegistrationChoice />} />
@@ -30,10 +30,10 @@ function App() {
               />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-          </Router>
+          </UserRoleProvider>
           <Toaster />
-        </UserRoleProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </Router>
     </ThemeProvider>
   );
 }
