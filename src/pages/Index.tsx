@@ -4,11 +4,13 @@ import { type ReleaseNote } from "@/components/ReleaseCard";
 import { Header } from "@/components/Header";
 import { ReleaseList } from "@/components/ReleaseList";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths } from "date-fns";
+import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths, parseISO } from "date-fns";
 import { useReleases } from "@/hooks/useReleases";
 import { ReleasesFilters } from "@/components/ReleasesFilters";
 import { ReleaseModals } from "@/components/ReleaseModals";
 import { DateRange } from "react-day-picker";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -22,10 +24,36 @@ export default function Index() {
   const [currentPage, setCurrentPage] = useState(1);
   const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
   const [selectedDateFilter, setSelectedDateFilter] = useState("all");
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchReleases();
   }, []);
+
+  const handleDeleteRelease = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('releases')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Release deleted",
+        description: "The release note has been successfully deleted.",
+      });
+
+      fetchReleases(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting release:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the release note.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDateFilterChange = (value: string) => {
     setSelectedDateFilter(value);
@@ -67,9 +95,9 @@ export default function Index() {
 
       const matchesCategory = category === "all" || release.category === category;
 
-      const matchesDateRange = 
-        !dateRange?.from || new Date(release.datetime) >= dateRange.from &&
-        !dateRange?.to || new Date(release.datetime) <= dateRange.to;
+      const releaseDate = parseISO(release.datetime);
+      const matchesDateRange = !dateRange?.from || !dateRange?.to || 
+        (releaseDate >= dateRange.from && releaseDate <= dateRange.to);
 
       return matchesSearch && matchesCategory && matchesDateRange;
     })
@@ -114,6 +142,7 @@ export default function Index() {
           releases={paginatedReleases}
           onSaveRelease={handleSaveRelease}
           onReleaseClick={setSelectedRelease}
+          onDeleteRelease={handleDeleteRelease}
         />
 
         {totalPages > 1 && (

@@ -1,3 +1,4 @@
+
 import { ReleaseCard, ReleaseNote } from "./ReleaseCard";
 import { AdminDialog } from "./AdminDialog";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -6,9 +7,10 @@ interface ReleaseListProps {
   releases: ReleaseNote[];
   onSaveRelease: (release: Partial<ReleaseNote>) => void;
   onReleaseClick: (release: ReleaseNote) => void;
+  onDeleteRelease: (id: string) => void;
 }
 
-export function ReleaseList({ releases, onSaveRelease, onReleaseClick }: ReleaseListProps) {
+export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteRelease }: ReleaseListProps) {
   const { role } = useUserRole();
 
   if (releases.length === 0) {
@@ -25,12 +27,12 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick }: Release
         <div 
           key={release.id} 
           className="flex items-start gap-4 w-full"
-          onClick={() => onReleaseClick(release)}
         >
-          <div className="flex-1 cursor-pointer">
+          <div className="flex-1">
             <ReleaseCard 
               release={release}
               onClick={() => onReleaseClick(release)}
+              onDelete={onDeleteRelease}
             />
           </div>
           {role === 'admin' && (
