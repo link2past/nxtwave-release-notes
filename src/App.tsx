@@ -9,6 +9,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import RegistrationChoice from "@/pages/RegistrationChoice";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import "./App.css";
 
 function App() {
   return (
