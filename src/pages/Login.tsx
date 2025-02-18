@@ -49,8 +49,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-24">
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg border border-border/50">
         <AuthForm
           email={email}
           password={password}
