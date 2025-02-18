@@ -6,6 +6,8 @@ import Color from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
 import { Toggle } from './ui/toggle';
 import { Button } from './ui/button';
 import {
@@ -15,7 +17,7 @@ import {
   ListOrdered,
   Type,
   Image as ImageIcon,
-  Link,
+  Link as LinkIcon,
   RotateCcw,
   RotateCw,
 } from 'lucide-react';
@@ -40,6 +42,10 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
       ListItem,
       BulletList,
       OrderedList,
+      Image,
+      Link.configure({
+        openOnClick: false,
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -56,7 +62,7 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
     if (file && onImageUpload) {
       try {
         const url = await onImageUpload(file);
-        editor.chain().focus().setImage({ src: url }).run();
+        editor.chain().focus().insertContent(`<img src="${url}" />`).run();
       } catch (error) {
         console.error('Error uploading image:', error);
       }
@@ -65,7 +71,7 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
 
   const addLink = () => {
     if (linkUrl) {
-      editor.chain().focus().setLink({ href: linkUrl }).run();
+      editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
       setLinkUrl('');
       setShowLinkInput(false);
     }
@@ -139,7 +145,7 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
             size="sm"
             onClick={() => setShowLinkInput(!showLinkInput)}
           >
-            <Link className="h-4 w-4" />
+            <LinkIcon className="h-4 w-4" />
           </Button>
           {showLinkInput && (
             <div className="flex items-center gap-2">

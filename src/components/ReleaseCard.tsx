@@ -31,6 +31,7 @@ export interface ReleaseNote {
   datetime: string;
   category: "feature" | "bugfix" | "enhancement";
   tags: Tag[];
+  slug: string;
   media?: {
     type: "image" | "video";
     url: string;

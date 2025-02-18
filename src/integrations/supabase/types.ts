@@ -99,6 +99,7 @@ export type Database = {
           datetime: string
           description: string
           id: string
+          slug: string
           title: string
           updated_at: string | null
         }
@@ -108,6 +109,7 @@ export type Database = {
           datetime?: string
           description: string
           id?: string
+          slug: string
           title: string
           updated_at?: string | null
         }
@@ -117,6 +119,7 @@ export type Database = {
           datetime?: string
           description?: string
           id?: string
+          slug?: string
           title?: string
           updated_at?: string | null
         }
