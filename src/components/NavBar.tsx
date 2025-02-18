@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 
 export function NavBar() {
-  const [logo, setLogo] = useState<string>(() => localStorage.getItem('navLogo') || '/placeholder.svg');
+  const defaultLogo = "/lovable-uploads/8c65e666-6798-4534-9667-b3c7fdd98a33.png";
+  const [logo, setLogo] = useState<string>(() => localStorage.getItem('navLogo') || defaultLogo);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -67,26 +68,45 @@ export function NavBar() {
     }
   };
 
+  const resetToDefaultLogo = () => {
+    setLogo(defaultLogo);
+    localStorage.setItem('navLogo', defaultLogo);
+    toast({
+      title: "Logo reset",
+      description: "The logo has been reset to default.",
+    });
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
-            <div className="relative group w-12 h-12">
+            <div className="relative group w-24 h-12">
               <img
                 src={logo}
-                alt="Logo"
+                alt="NXT WAVE Logo"
                 className="w-full h-full object-contain rounded-md"
               />
-              <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-md">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <Upload className="h-4 w-4" />
-              </label>
+              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-md">
+                <label className="cursor-pointer p-1 hover:bg-white/20 rounded">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <Upload className="h-4 w-4" />
+                </label>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-white hover:bg-white/20"
+                  onClick={resetToDefaultLogo}
+                >
+                  ↺
+                </Button>
+              </div>
             </div>
             <h1 className="text-xl font-semibold">Release Notes</h1>
           </div>
