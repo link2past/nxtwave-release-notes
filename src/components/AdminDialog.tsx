@@ -1,24 +1,27 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { ReleaseNote } from "./ReleaseCard";
+import { ReleaseNote, Tag } from "./ReleaseCard";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { RichTextEditor } from "./RichTextEditor";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "./ui/scroll-area";
+import { Badge } from "./ui/badge";
+import { X } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   category: z.enum(["feature", "bugfix", "enhancement"]),
-  tags: z.string().min(1, "At least one tag is required"),
+  selectedTag: z.string().optional(),
   datetime: z.string().min(1, "Date and time is required"),
   media: z.array(z.object({
     type: z.enum(["image", "video"]),
@@ -33,6 +36,8 @@ interface AdminDialogProps {
 
 export function AdminDialog({ release, onSave }: AdminDialogProps) {
   const [open, setOpen] = useState(false);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -41,11 +46,49 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
       title: release?.title || "",
       description: release?.description || "",
       category: release?.category || "feature",
-      tags: release?.tags.map(t => t.name).join(", ") || "",
       datetime: release?.datetime ? format(new Date(release.datetime), "yyyy-MM-dd'T'HH:mm") : format(new Date(), "yyyy-MM-dd'T'HH:mm"),
       media: release?.media || []
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      // Fetch available tags from the database
+      const fetchTags = async () => {
+        const { data: tags, error } = await supabase
+          .from('tags')
+          .select('*')
+          .order('name');
+
+        if (error) {
+          console.error('Error fetching tags:', error);
+          return;
+        }
+
+        setAvailableTags(tags);
+
+        // If editing, set the selected tags
+        if (release?.tags) {
+          setSelectedTags(release.tags);
+        } else {
+          setSelectedTags([]);
+        }
+      };
+
+      fetchTags();
+    }
+  }, [open, release]);
+
+  const handleTagSelect = (tagId: string) => {
+    const tag = availableTags.find(t => t.id === tagId);
+    if (tag && !selectedTags.some(t => t.id === tag.id)) {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const removeTag = (tagId: string) => {
+    setSelectedTags(selectedTags.filter(tag => tag.id !== tagId));
+  };
 
   const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -61,16 +104,10 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const tags = values.tags.split(",").map((tag, index) => ({
-        id: release?.tags[index]?.id || `new-${index}`,
-        name: tag.trim(),
-        color: release?.tags[index]?.color || "#2563eb",
-      }));
-
       const updatedRelease: Partial<ReleaseNote> = {
         ...release,
         ...values,
-        tags,
+        tags: selectedTags,
         datetime: new Date(values.datetime).toISOString(),
         media: values.media?.map(m => ({
           type: m.type as "image" | "video",
@@ -81,6 +118,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
       await onSave(updatedRelease);
       
       form.reset();
+      setSelectedTags([]);
       setOpen(false);
       
       toast({
@@ -192,19 +230,60 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
-              name="tags"
+              name="selectedTag"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="e.g. ui, performance, security" />
-                  </FormControl>
+                  <FormLabel>Tags</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      handleTagSelect(value);
+                    }}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tags" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <ScrollArea className="h-[200px]">
+                        {availableTags.map((tag) => (
+                          <SelectItem key={tag.id} value={tag.id}>
+                            {tag.name}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedTags.map((tag) => (
+                      <Badge
+                        key={tag.id}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {tag.name}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                          onClick={() => removeTag(tag.id)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
             <FormItem>
               <FormLabel>Media (Images/Videos)</FormLabel>
               <Input
