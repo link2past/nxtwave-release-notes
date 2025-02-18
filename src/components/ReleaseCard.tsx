@@ -1,8 +1,9 @@
+
 import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { MediaDisplay } from "./MediaDisplay";
 import { TagList } from "./TagList";
-import { Trash2 } from "lucide-react";
+import { Trash2, Link } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   AlertDialog,
@@ -15,7 +16,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Link } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 
 export interface Tag {
@@ -61,12 +61,32 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { toast } = useToast();
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent card click when clicking delete button
-    if ((e.target as HTMLElement).closest('.delete-button')) {
+    // Prevent card click when clicking delete button or copy link button
+    if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
       e.stopPropagation();
       return;
     }
     onClick?.();
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      // Construct the shareable URL using the release slug
+      const shareableUrl = `${window.location.origin}/releases/${release.slug}`;
+      await navigator.clipboard.writeText(shareableUrl);
+      
+      toast({
+        title: "Link copied!",
+        description: "The shareable link has been copied to your clipboard.",
+      });
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      toast({
+        title: "Failed to copy link",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -126,15 +146,8 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            const url = `${window.location.origin}/releases/${release.slug}`;
-            navigator.clipboard.writeText(url);
-            toast({
-              title: "Link copied!",
-              description: "The shareable link has been copied to your clipboard.",
-            });
-          }}
+          className="copy-link-button"
+          onClick={handleCopyLink}
         >
           <Link className="h-4 w-4 mr-2" />
           Copy Link
