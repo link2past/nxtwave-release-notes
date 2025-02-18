@@ -28,24 +28,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
       setSession(session);
       setLoading(false);
 
-      if (_event === 'TOKEN_REFRESHED') {
-        console.log('Token was refreshed successfully');
-      }
-
-      if (_event === 'SIGNED_OUT') {
-        // Clear any application state
+      if (event === 'SIGNED_OUT') {
         setSession(null);
         navigate('/login');
       }
-    });
 
-    // Add error handling for refresh token failures
-    supabase.auth.onAuthStateChange((event, session) => {
+      // Handle refresh token failures
       if (event === 'TOKEN_REFRESHED' && !session) {
         console.log('Token refresh failed');
         toast({
@@ -53,6 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: "Please sign in again to continue.",
           variant: "destructive",
         });
+        await supabase.auth.signOut();
+        setSession(null);
         navigate('/login');
       }
     });
