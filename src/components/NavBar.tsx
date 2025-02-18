@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Image, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 
@@ -43,10 +43,10 @@ export function NavBar() {
         .getPublicUrl(fileName);
 
       // Ensure the image is loaded before updating state
-      const img = new Image();
-      img.src = publicUrl;
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
+      await new Promise<void>((resolve, reject) => {
+        const img = document.createElement('img');
+        img.src = publicUrl;
+        img.onload = () => resolve();
         img.onerror = () => reject(new Error('Failed to load image'));
       });
 
