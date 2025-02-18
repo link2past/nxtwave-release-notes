@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { MediaDisplay } from "./MediaDisplay";
@@ -16,6 +15,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Link } from "lucide-react";
+import { useToast } from "./ui/use-toast";
 
 export interface Tag {
   id: string;
@@ -56,6 +57,7 @@ interface ReleaseCardProps {
 
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { role } = useUserRole();
+  const { toast } = useToast();
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent card click when clicking delete button
@@ -118,6 +120,26 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
         className="text-muted-foreground mb-4 leading-relaxed line-clamp-2 prose prose-sm dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: release.description }}
       />
+
+      <div className="flex items-center gap-2 mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            const url = `${window.location.origin}/releases/${release.slug}`;
+            navigator.clipboard.writeText(url);
+            toast({
+              title: "Link copied!",
+              description: "The shareable link has been copied to your clipboard.",
+            });
+          }}
+        >
+          <Link className="h-4 w-4 mr-2" />
+          Copy Link
+        </Button>
+      </div>
+
       {release.media && release.media.length > 0 && (
         <MediaDisplay media={release.media} />
       )}

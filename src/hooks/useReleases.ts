@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReleaseNote } from "@/components/ReleaseCard";
@@ -50,12 +49,20 @@ export function useReleases() {
 
   const handleSaveRelease = async (updatedRelease: Partial<ReleaseNote>) => {
     try {
+      // Generate a slug from the title
+      const slug = updatedRelease.title
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') + '-' + 
+        (updatedRelease.id?.slice(0, 8) || crypto.randomUUID().slice(0, 8));
+
       // Insert or update the release
       const releaseData = {
         title: updatedRelease.title,
         description: updatedRelease.description,
         category: updatedRelease.category,
-        datetime: updatedRelease.datetime
+        datetime: updatedRelease.datetime,
+        slug
       };
 
       let releaseId: string;

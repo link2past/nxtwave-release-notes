@@ -11,6 +11,8 @@ import * as z from "zod";
 import { ReleaseNote } from "./ReleaseCard";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
+import { RichTextEditor } from "./RichTextEditor";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -129,9 +131,27 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (supports HTML)</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea {...field} className="font-mono" />
+                    <RichTextEditor
+                      content={field.value}
+                      onChange={field.onChange}
+                      onImageUpload={async (file) => {
+                        const { data, error } = await supabase.storage
+                          .from('media')
+                          .upload(`releases/${crypto.randomUUID()}-${file.name}`, file);
+
+                        if (error) {
+                          throw error;
+                        }
+
+                        const { data: { publicUrl } } = supabase.storage
+                          .from('media')
+                          .getPublicUrl(data.path);
+
+                        return publicUrl;
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
