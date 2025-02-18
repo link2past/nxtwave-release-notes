@@ -8,6 +8,7 @@ import { NavBar } from "@/components/NavBar";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import Dashboard from "@/pages/Dashboard";
 import RegistrationChoice from "@/pages/RegistrationChoice";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -23,6 +24,14 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<RegistrationChoice />} />
                 <Route path="/register/:type" element={<Register />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/"
                   element={
