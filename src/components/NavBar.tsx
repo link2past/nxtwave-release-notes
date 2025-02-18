@@ -50,7 +50,7 @@ export function NavBar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <div className="relative group w-12 h-12">
               <img
                 src={logo}
@@ -67,6 +67,7 @@ export function NavBar() {
                 <Upload className="h-4 w-4" />
               </label>
             </div>
+            <h1 className="text-xl font-semibold">Release Notes</h1>
           </div>
 
           <div className="flex items-center gap-4">
