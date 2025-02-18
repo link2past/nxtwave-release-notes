@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { type ReleaseNote } from "@/components/ReleaseCard";
 import { Header } from "@/components/Header";
@@ -11,6 +10,7 @@ import { ReleaseModals } from "@/components/ReleaseModals";
 import { DateRange } from "react-day-picker";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ClickUpIntegration } from "@/components/ClickUpIntegration";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -116,8 +116,9 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
-        <div className="mb-8">
+        <div className="mb-8 flex justify-between items-center">
           <Header onSaveRelease={handleSaveRelease} />
+          <ClickUpIntegration />
         </div>
         
         <ReleasesFilters
