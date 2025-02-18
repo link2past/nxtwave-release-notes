@@ -25,7 +25,15 @@ export default function Login() {
         password,
       });
 
-      if (signInError) throw signInError;
+      if (signInError) {
+        // Provide more specific error messages
+        if (signInError.message.includes("Invalid login credentials")) {
+          throw new Error(
+            "Invalid login credentials. Please check your email and password, or register if you don't have an account."
+          );
+        }
+        throw signInError;
+      }
 
       if (signInData.user) {
         const userRole = await getUserRole(signInData.user.id);
@@ -38,8 +46,9 @@ export default function Login() {
         navigate("/");
       }
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
-        title: "Error",
+        title: "Login Failed",
         description: error.message || "Failed to login. Please try again.",
         variant: "destructive",
       });
@@ -66,6 +75,16 @@ export default function Login() {
           onEmailChange={(e) => setEmail(e.target.value)}
           onPasswordChange={(e) => setPassword(e.target.value)}
         />
+
+        <div className="text-sm text-center text-muted-foreground">
+          <p>
+            For testing, you can use these credentials:
+          </p>
+          <p>
+            Email: test@example.com<br />
+            Password: password123
+          </p>
+        </div>
       </div>
     </div>
   );
