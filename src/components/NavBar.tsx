@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Download, LogOut, Moon, Sun, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,9 +12,12 @@ export function NavBar() {
   const defaultLogo = "/lovable-uploads/8c65e666-6798-4534-9667-b3c7fdd98a33.png";
   const [logo, setLogo] = useState<string>(() => localStorage.getItem('navLogo') || defaultLogo);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const { role } = useUserRole();
+
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -126,69 +129,73 @@ export function NavBar() {
                 alt="NXT WAVE Logo"
                 className="w-full h-full object-contain rounded-md"
               />
-              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-md">
-                <label className="cursor-pointer p-1 hover:bg-white/20 rounded">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <Upload className="h-4 w-4" />
-                </label>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-white hover:bg-white/20"
-                  onClick={resetToDefaultLogo}
-                >
-                  ↺
-                </Button>
-              </div>
+              {!isAuthPage && (
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-md">
+                  <label className="cursor-pointer p-1 hover:bg-white/20 rounded">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <Upload className="h-4 w-4" />
+                  </label>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-white hover:bg-white/20"
+                    onClick={resetToDefaultLogo}
+                  >
+                    ↺
+                  </Button>
+                </div>
+              )}
             </div>
             <h1 className="text-xl font-semibold">Release Notes</h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              {role === 'admin' ? 'Admin Mode' : 'User Mode'}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => navigate('/dashboard')}
-            >
-              Dashboard
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-              onClick={handleDownload}
-            >
-              <Download className="h-4 w-4" />
-              Download
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          </div>
+          {!isAuthPage && (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground">
+                {role === 'admin' ? 'Admin Mode' : 'User Mode'}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="rounded-full"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => navigate('/dashboard')}
+              >
+                Dashboard
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                onClick={handleDownload}
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </nav>
