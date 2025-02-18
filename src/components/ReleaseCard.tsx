@@ -68,7 +68,6 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { toast } = useToast();
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent card click when clicking delete button or copy link button
     if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
       e.stopPropagation();
       return;
@@ -78,7 +77,6 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
 
   const handleCopyLink = async () => {
     try {
-      // Construct the shareable URL using the release slug
       const shareableUrl = `${window.location.origin}/releases/${release.slug}`;
       await navigator.clipboard.writeText(shareableUrl);
       
@@ -98,7 +96,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
 
   return (
     <div 
-      className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm cursor-pointer relative"
+      className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm cursor-pointer relative group"
       onClick={handleCardClick}
     >
       <div className="flex items-center justify-between mb-4">
@@ -108,7 +106,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
           >
             {categoryLabels[release.category]}
           </span>
-          <time className="text-sm text-muted-foreground">
+          <time className="text-sm text-muted-foreground font-playfair italic">
             {format(new Date(release.datetime), "MMM d, yyyy HH:mm")}
           </time>
         </div>
@@ -143,9 +141,11 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
           </AlertDialog>
         )}
       </div>
-      <h3 className="text-xl font-semibold mb-3 text-card-foreground">{release.title}</h3>
+      <h3 className="text-xl font-playfair font-semibold mb-3 text-highlight-purple group-hover:text-highlight-purple/90 transition-colors">
+        {release.title}
+      </h3>
       <div 
-        className="text-muted-foreground mb-4 leading-relaxed line-clamp-2 prose prose-sm dark:prose-invert"
+        className="text-muted-foreground mb-4 leading-relaxed line-clamp-2 prose prose-sm dark:prose-invert font-playfair"
         dangerouslySetInnerHTML={{ __html: release.description }}
       />
 
@@ -153,7 +153,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
         <Button
           variant="outline"
           size="sm"
-          className="copy-link-button"
+          className="copy-link-button font-playfair hover:bg-highlight-yellow/20"
           onClick={handleCopyLink}
         >
           <Link className="h-4 w-4 mr-2" />
@@ -168,12 +168,12 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
       <div className="space-y-3">
         {release.labels && release.labels.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-2">Labels</h4>
+            <h4 className="text-sm font-medium mb-2 font-playfair">Labels</h4>
             <div className="flex flex-wrap gap-2">
               {release.labels.map((label) => (
                 <span
                   key={label.id}
-                  className="px-3 py-1 text-xs rounded-full transition-colors duration-200"
+                  className="px-3 py-1 text-xs rounded-full transition-colors duration-200 font-playfair"
                   style={{ 
                     backgroundColor: `${label.color}20`, 
                     color: label.color,
@@ -189,7 +189,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
 
         {release.tags && release.tags.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-2">Tags</h4>
+            <h4 className="text-sm font-medium mb-2 font-playfair">Tags</h4>
             <TagList tags={release.tags} />
           </div>
         )}
