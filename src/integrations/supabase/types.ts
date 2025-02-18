@@ -9,6 +9,24 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      labels: {
+        Row: {
+          color: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       media: {
         Row: {
           created_at: string | null
@@ -61,6 +79,36 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      release_labels: {
+        Row: {
+          label_id: string
+          release_id: string
+        }
+        Insert: {
+          label_id: string
+          release_id: string
+        }
+        Update: {
+          label_id?: string
+          release_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "release_labels_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "labels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "release_labels_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "releases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       release_tags: {
         Row: {

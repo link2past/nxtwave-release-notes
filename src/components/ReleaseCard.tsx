@@ -24,6 +24,12 @@ export interface Tag {
   color: string;
 }
 
+export interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface ReleaseNote {
   id: string;
   title: string;
@@ -31,6 +37,7 @@ export interface ReleaseNote {
   datetime: string;
   category: "feature" | "bugfix" | "enhancement";
   tags: Tag[];
+  labels: Label[];
   slug: string;
   media?: {
     type: "image" | "video";
@@ -157,7 +164,36 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
       {release.media && release.media.length > 0 && (
         <MediaDisplay media={release.media} />
       )}
-      <TagList tags={release.tags} />
+
+      <div className="space-y-3">
+        {release.labels && release.labels.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium mb-2">Labels</h4>
+            <div className="flex flex-wrap gap-2">
+              {release.labels.map((label) => (
+                <span
+                  key={label.id}
+                  className="px-3 py-1 text-xs rounded-full transition-colors duration-200"
+                  style={{ 
+                    backgroundColor: `${label.color}20`, 
+                    color: label.color,
+                    boxShadow: `0 1px 2px ${label.color}10`
+                  }}
+                >
+                  {label.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {release.tags && release.tags.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium mb-2">Tags</h4>
+            <TagList tags={release.tags} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

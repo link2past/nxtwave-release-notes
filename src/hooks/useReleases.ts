@@ -18,6 +18,10 @@ export function useReleases() {
           release_tags (
             tag_id,
             tags (*)
+          ),
+          release_labels (
+            label_id,
+            labels (*)
           )
         `);
 
@@ -30,6 +34,7 @@ export function useReleases() {
         datetime: release.datetime,
         category: release.category as "feature" | "bugfix" | "enhancement",
         tags: release.release_tags.map(rt => rt.tags),
+        labels: release.release_labels ? release.release_labels.map(rl => rl.labels) : [],
         media: release.media ? release.media.map(m => ({
           type: m.type as "image" | "video",
           url: m.url
@@ -124,6 +129,42 @@ export function useReleases() {
             });
 
           if (releaseTagError) throw releaseTagError;
+        }
+      }
+
+      // Handle labels
+      if (updatedRelease.labels) {
+        // Delete existing release labels
+        await supabase
+          .from('release_labels')
+          .delete()
+          .eq('release_id', releaseId);
+
+        // Insert new labels and release_labels
+        for (const label of updatedRelease.labels) {
+          // Insert or update label
+          const { data: labelData, error: labelError } = await supabase
+            .from('labels')
+            .upsert({ 
+              id: label.id && !label.id.startsWith('new-') ? label.id : undefined,
+              name: label.name, 
+              color: label.color 
+            })
+            .select()
+            .single();
+
+          if (labelError) throw labelError;
+          if (!labelData) throw new Error('No label was created');
+
+          // Create release-label relationship
+          const { error: releaseLabelError } = await supabase
+            .from('release_labels')
+            .insert({
+              release_id: releaseId,
+              label_id: labelData.id
+            });
+
+          if (releaseLabelError) throw releaseLabelError;
         }
       }
 
