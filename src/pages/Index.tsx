@@ -11,8 +11,6 @@ import { ReleaseModals } from "@/components/ReleaseModals";
 import { DateRange } from "react-day-picker";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -88,68 +86,6 @@ export default function Index() {
     }
   };
 
-  const handleDownloadFiltered = () => {
-    try {
-      // Filter releases based on current filters
-      const filteredReleases = releases
-        .filter((release) => {
-          const matchesSearch =
-            search === "" ||
-            release.title.toLowerCase().includes(search.toLowerCase()) ||
-            release.description.toLowerCase().includes(search.toLowerCase());
-
-          const matchesCategory = category === "all" || release.category === category;
-
-          const releaseDate = parseISO(release.datetime);
-          const matchesDateRange = !dateRange?.from || !dateRange?.to || 
-            (releaseDate >= dateRange.from && releaseDate <= dateRange.to);
-
-          return matchesSearch && matchesCategory && matchesDateRange;
-        })
-        .sort((a, b) => {
-          const dateA = new Date(a.datetime).getTime();
-          const dateB = new Date(b.datetime).getTime();
-          return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
-        });
-
-      // Convert to CSV format
-      const csvContent = [
-        ["Title", "Description", "Category", "Date", "Tags", "Labels"].join(","),
-        ...filteredReleases.map(release => [
-          `"${release.title.replace(/"/g, '""')}"`,
-          `"${release.description.replace(/"/g, '""')}"`,
-          release.category,
-          new Date(release.datetime).toISOString(),
-          release.tags.map(t => t.name).join(";"),
-          release.labels.map(l => l.name).join(";")
-        ].join(","))
-      ].join("\n");
-
-      // Create and trigger download
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `release-notes-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: "Download successful",
-        description: "Your filtered release notes have been downloaded as a CSV file.",
-      });
-    } catch (error) {
-      console.error('Error downloading releases:', error);
-      toast({
-        title: "Download failed",
-        description: "Failed to download release notes. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const filteredReleases = releases
     .filter((release) => {
       const matchesSearch =
@@ -180,15 +116,8 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-8">
           <Header onSaveRelease={handleSaveRelease} />
-          <Button
-            onClick={handleDownloadFiltered}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Download as CSV
-          </Button>
         </div>
         
         <ReleasesFilters
