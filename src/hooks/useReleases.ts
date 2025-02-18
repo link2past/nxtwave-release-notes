@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReleaseNote } from "@/components/ReleaseCard";
@@ -32,7 +33,8 @@ export function useReleases() {
         media: release.media ? release.media.map(m => ({
           type: m.type as "image" | "video",
           url: m.url
-        })) : undefined
+        })) : undefined,
+        slug: release.slug || `${release.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${release.id.slice(0, 8)}`
       }));
 
       console.log('Fetched releases:', transformedReleases);

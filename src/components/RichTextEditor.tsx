@@ -36,7 +36,16 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+      }),
       TextStyle,
       Color,
       ListItem,
@@ -45,11 +54,19 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
       Image,
       Link.configure({
         openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-primary underline',
+        },
       }),
     ],
     content,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose dark:prose-invert max-w-none min-h-[100px] focus:outline-none',
+      },
     },
   });
 
@@ -62,7 +79,7 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
     if (file && onImageUpload) {
       try {
         const url = await onImageUpload(file);
-        editor.chain().focus().insertContent(`<img src="${url}" />`).run();
+        editor.chain().focus().setImage({ src: url }).run();
       } catch (error) {
         console.error('Error uploading image:', error);
       }
@@ -71,10 +88,18 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
 
   const addLink = () => {
     if (linkUrl) {
-      editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
+      editor
+        .chain()
+        .focus()
+        .setLink({ href: linkUrl })
+        .run();
       setLinkUrl('');
       setShowLinkInput(false);
     }
+  };
+
+  const removeLink = () => {
+    editor.chain().focus().unsetLink().run();
   };
 
   return (
@@ -133,7 +158,7 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
           <input
             type="file"
             className="hidden"
-            accept="image/*,video/*"
+            accept="image/*"
             onChange={handleImageUpload}
           />
           <ImageIcon className="h-4 w-4" />
@@ -143,9 +168,15 @@ export function RichTextEditor({ content, onChange, onImageUpload }: RichTextEdi
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowLinkInput(!showLinkInput)}
+            onClick={() => {
+              if (editor.isActive('link')) {
+                removeLink();
+              } else {
+                setShowLinkInput(!showLinkInput);
+              }
+            }}
           >
-            <LinkIcon className="h-4 w-4" />
+            <LinkIcon className={`h-4 w-4 ${editor.isActive('link') ? 'text-primary' : ''}`} />
           </Button>
           {showLinkInput && (
             <div className="flex items-center gap-2">
