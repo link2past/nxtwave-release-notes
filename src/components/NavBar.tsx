@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Download, LogOut, Moon, Sun, Upload } from "lucide-react";
+import { Download, LogOut, Moon, Plus, Sun, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { useTheme } from "next-themes";
@@ -17,7 +16,7 @@ export function NavBar() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const { role } = useUserRole();
-  const { releases } = useReleases();
+  const { releases, handleSaveRelease } = useReleases();
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
@@ -26,12 +25,10 @@ export function NavBar() {
     if (!file) return;
 
     try {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         throw new Error('Please upload an image file');
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('File size must be less than 5MB');
       }
@@ -52,7 +49,6 @@ export function NavBar() {
         .from('logos')
         .getPublicUrl(fileName);
 
-      // Ensure the image is loaded before updating state
       await new Promise<void>((resolve, reject) => {
         const img = document.createElement('img');
         img.src = publicUrl;
@@ -108,7 +104,6 @@ export function NavBar() {
 
   const handleDownload = () => {
     try {
-      // Convert releases to CSV format
       const headers = ["Title", "Description", "Category", "Date"];
       const csvContent = [
         headers.join(","),
@@ -120,7 +115,6 @@ export function NavBar() {
         ].join(","))
       ].join("\n");
 
-      // Create blob and download link
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
@@ -145,6 +139,20 @@ export function NavBar() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleAddNewRelease = () => {
+    handleSaveRelease({
+      title: "",
+      description: "",
+      category: "feature",
+      datetime: new Date().toISOString(),
+      media: [],
+    });
+    toast({
+      title: "New release",
+      description: "Created a new release note.",
+    });
   };
 
   return (
@@ -208,14 +216,24 @@ export function NavBar() {
                 Dashboard
               </Button>
               {role === 'admin' && (
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                  onClick={handleDownload}
-                >
-                  <Download className="h-4 w-4" />
-                  Download
-                </Button>
+                <>
+                  <Button
+                    variant="default"
+                    className="flex items-center gap-2"
+                    onClick={handleAddNewRelease}
+                  >
+                    <Plus className="h-4 w-4" />
+                    New Release
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                    onClick={handleDownload}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                </>
               )}
               <Button
                 variant="ghost"
