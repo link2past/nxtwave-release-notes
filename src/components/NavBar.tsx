@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { useTheme } from "next-themes";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { useReleases } from "@/hooks/useReleases";
 
 export function NavBar() {
   const defaultLogo = "/lovable-uploads/8c65e666-6798-4534-9667-b3c7fdd98a33.png";
@@ -16,6 +17,7 @@ export function NavBar() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const { role } = useUserRole();
+  const { releases } = useReleases();
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
@@ -105,14 +107,42 @@ export function NavBar() {
   };
 
   const handleDownload = () => {
-    // Trigger download from Index page
-    const downloadButton = document.querySelector('[aria-label="Download as CSV"]') as HTMLButtonElement;
-    if (downloadButton) {
-      downloadButton.click();
-    } else {
+    try {
+      // Convert releases to CSV format
+      const headers = ["Title", "Description", "Category", "Date", "Status"];
+      const csvContent = [
+        headers.join(","),
+        ...releases.map(release => [
+          `"${release.title.replace(/"/g, '""')}"`,
+          `"${release.description.replace(/"/g, '""')}"`,
+          release.category,
+          new Date(release.datetime).toLocaleDateString(),
+          release.status
+        ].join(","))
+      ].join("\n");
+
+      // Create blob and download link
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute("href", url);
+      link.setAttribute("download", `release_notes_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
       toast({
-        title: "Download unavailable",
-        description: "Please navigate to the main page to download release notes.",
+        title: "Download complete",
+        description: "Release notes have been downloaded as CSV.",
+      });
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download release notes. Please try again.",
         variant: "destructive",
       });
     }
