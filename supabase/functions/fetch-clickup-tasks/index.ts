@@ -19,22 +19,37 @@ serve(async (req) => {
       throw new Error('API key and List ID are required')
     }
 
-    const response = await fetch(`https://api.clickup.com/api/v2/list/${listId}/task`, {
-      headers: {
-        'Authorization': apiKey,
-        'Content-Type': 'application/json'
+    const tasks = [];
+    let page = 0;
+    let hasMore = true;
+
+    // Fetch all tasks using pagination
+    while (hasMore) {
+      const response = await fetch(`https://api.clickup.com/api/v2/list/${listId}/task?page=${page}`, {
+        headers: {
+          'Authorization': apiKey,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`ClickUp API error: ${response.statusText}`)
       }
-    })
 
-    if (!response.ok) {
-      throw new Error(`ClickUp API error: ${response.statusText}`)
+      const data = await response.json()
+      if (data.tasks && data.tasks.length > 0) {
+        tasks.push(...data.tasks.map((task: any) => ({
+          id: task.id,
+          name: task.name,
+          status: task.status?.status || 'Unknown',
+          dueDate: task.due_date,
+          priority: task.priority?.priority || 'None'
+        })));
+        page++;
+      } else {
+        hasMore = false;
+      }
     }
-
-    const data = await response.json()
-    const tasks = data.tasks.map((task: any) => ({
-      id: task.id,
-      name: task.name
-    }))
 
     return new Response(
       JSON.stringify({ tasks }),

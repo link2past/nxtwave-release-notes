@@ -12,11 +12,20 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+
+interface Task {
+  id: string;
+  name: string;
+  status: string;
+  dueDate: string | null;
+  priority: string;
+}
 
 export function ClickUpIntegration() {
   const [apiKey, setApiKey] = useState("");
   const [listId, setListId] = useState("");
-  const [tasks, setTasks] = useState<Array<{ id: string; name: string }>>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -41,7 +50,7 @@ export function ClickUpIntegration() {
       setTasks(data.tasks);
       toast({
         title: "Success!",
-        description: "Tasks fetched successfully",
+        description: `${data.tasks.length} tasks fetched successfully`,
       });
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -55,12 +64,27 @@ export function ClickUpIntegration() {
     }
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case "urgent":
+        return "bg-red-500";
+      case "high":
+        return "bg-orange-500";
+      case "normal":
+        return "bg-blue-500";
+      case "low":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline">Connect ClickUp</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>ClickUp Integration</DialogTitle>
           <DialogDescription>
@@ -97,14 +121,29 @@ export function ClickUpIntegration() {
         </div>
         {tasks.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2">Tasks:</h3>
-            <div className="max-h-[200px] overflow-y-auto">
+            <h3 className="text-sm font-medium mb-2">Tasks ({tasks.length}):</h3>
+            <div className="max-h-[400px] overflow-y-auto">
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="p-2 border-b last:border-b-0 text-sm"
+                  className="p-3 border rounded-lg mb-2 last:mb-0 hover:bg-accent/50 transition-colors"
                 >
-                  {task.name}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="font-medium">{task.name}</p>
+                      <div className="flex gap-2 mt-2">
+                        <Badge variant="outline">{task.status}</Badge>
+                        <Badge className={getPriorityColor(task.priority)}>
+                          {task.priority}
+                        </Badge>
+                      </div>
+                    </div>
+                    {task.dueDate && (
+                      <span className="text-xs text-muted-foreground">
+                        Due: {new Date(parseInt(task.dueDate)).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
