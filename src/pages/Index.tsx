@@ -117,8 +117,7 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
-        <div className="mb-8 flex justify-between items-center">
-          <Header onSaveRelease={handleSaveRelease} />
+        <div className="mb-8 flex justify-end">
           <ClickUpIntegration />
         </div>
         
