@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { type ReleaseNote } from "@/components/ReleaseCard";
 import { ReleaseList } from "@/components/ReleaseList";
@@ -40,12 +41,12 @@ export default function Index() {
 
       if (error) throw error;
 
+      await fetchReleases(); // Refresh the list immediately after deletion
+
       toast({
         title: "Release deleted",
         description: "The release note has been successfully deleted.",
       });
-
-      fetchReleases(); // Refresh the list
     } catch (error) {
       console.error('Error deleting release:', error);
       toast({

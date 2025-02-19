@@ -21,6 +21,14 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteR
     );
   }
 
+  const handleDelete = async (id: string) => {
+    try {
+      await onDeleteRelease(id);
+    } catch (error) {
+      console.error('Error in ReleaseList delete handler:', error);
+    }
+  };
+
   return (
     <div className="grid gap-6">
       {releases.map((release) => (
@@ -32,7 +40,7 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteR
             <ReleaseCard 
               release={release}
               onClick={() => onReleaseClick(release)}
-              onDelete={onDeleteRelease}
+              onDelete={handleDelete}
             />
           </div>
           {role === 'admin' && (
