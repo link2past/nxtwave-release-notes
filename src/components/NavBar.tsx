@@ -109,15 +109,14 @@ export function NavBar() {
   const handleDownload = () => {
     try {
       // Convert releases to CSV format
-      const headers = ["Title", "Description", "Category", "Date", "Status"];
+      const headers = ["Title", "Description", "Category", "Date"];
       const csvContent = [
         headers.join(","),
         ...releases.map(release => [
           `"${release.title.replace(/"/g, '""')}"`,
           `"${release.description.replace(/"/g, '""')}"`,
           release.category,
-          new Date(release.datetime).toLocaleDateString(),
-          release.status
+          new Date(release.datetime).toLocaleDateString()
         ].join(","))
       ].join("\n");
 
@@ -208,14 +207,16 @@ export function NavBar() {
               >
                 Dashboard
               </Button>
-              <Button
-                variant="ghost"
-                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                onClick={handleDownload}
-              >
-                <Download className="h-4 w-4" />
-                Download
-              </Button>
+              {role === 'admin' && (
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                  onClick={handleDownload}
+                >
+                  <Download className="h-4 w-4" />
+                  Download
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground flex items-center gap-2"

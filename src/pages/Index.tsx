@@ -1,7 +1,5 @@
-
 import { useState, useEffect } from "react";
 import { type ReleaseNote } from "@/components/ReleaseCard";
-import { Header } from "@/components/Header";
 import { ReleaseList } from "@/components/ReleaseList";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths, parseISO } from "date-fns";
@@ -12,6 +10,7 @@ import { DateRange } from "react-day-picker";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ClickUpIntegration } from "@/components/ClickUpIntegration";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -26,6 +25,7 @@ export default function Index() {
   const [maximizedMedia, setMaximizedMedia] = useState<{ type: "image" | "video"; url: string } | null>(null);
   const [selectedDateFilter, setSelectedDateFilter] = useState("all");
   const { toast } = useToast();
+  const { role } = useUserRole();
 
   useEffect(() => {
     fetchReleases();
@@ -117,9 +117,11 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
-        <div className="mb-8 flex justify-end">
-          <ClickUpIntegration />
-        </div>
+        {role === 'admin' && (
+          <div className="mb-8 flex justify-end">
+            <ClickUpIntegration />
+          </div>
+        )}
         
         <ReleasesFilters
           search={search}
