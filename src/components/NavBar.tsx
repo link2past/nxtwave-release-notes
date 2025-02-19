@@ -7,6 +7,7 @@ import { useToast } from "./ui/use-toast";
 import { useTheme } from "next-themes";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { useReleases } from "@/hooks/useReleases";
+import { AdminDialog } from "./AdminDialog";
 
 export function NavBar() {
   const defaultLogo = "/lovable-uploads/8c65e666-6798-4534-9667-b3c7fdd98a33.png";
@@ -217,14 +218,9 @@ export function NavBar() {
               </Button>
               {role === 'admin' && (
                 <>
-                  <Button
-                    variant="default"
-                    className="flex items-center gap-2"
-                    onClick={handleAddNewRelease}
-                  >
-                    <Plus className="h-4 w-4" />
-                    New Release
-                  </Button>
+                  <AdminDialog
+                    onSave={handleSaveRelease}
+                  />
                   <Button
                     variant="ghost"
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
