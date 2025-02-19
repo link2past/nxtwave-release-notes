@@ -59,8 +59,8 @@ const categoryLabels = {
 
 interface ReleaseCardProps {
   release: ReleaseNote;
-  onClick?: () => void;
-  onDelete?: (id: string) => void;
+  onClick?: (e: React.MouseEvent) => void;
+  onDelete?: (e: React.MouseEvent) => void;
 }
 
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
@@ -69,13 +69,14 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
 
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
-      e.stopPropagation();
       return;
     }
-    onClick?.();
+    onClick?.(e);
   };
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       const shareableUrl = `${window.location.origin}/releases/${release.slug}`;
       await navigator.clipboard.writeText(shareableUrl);
@@ -92,6 +93,12 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete?.(e);
   };
 
   return (
@@ -117,11 +124,15 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
                 variant="ghost" 
                 size="icon"
                 className="delete-button absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -129,9 +140,9 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={() => onDelete?.(release.id)}
+                  onClick={handleDelete}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
                   Delete
@@ -141,6 +152,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
           </AlertDialog>
         )}
       </div>
+
       <h3 className="text-xl font-playfair font-semibold mb-3 text-highlight-purple group-hover:text-highlight-purple/90 transition-colors">
         {release.title}
       </h3>

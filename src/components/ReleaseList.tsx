@@ -21,7 +21,9 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteR
     );
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       await onDeleteRelease(id);
     } catch (error) {
@@ -35,12 +37,19 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteR
         <div 
           key={release.id} 
           className="flex items-start gap-4 w-full"
+          onClick={(e) => {
+            e.preventDefault();
+            onReleaseClick(release);
+          }}
         >
           <div className="flex-1">
             <ReleaseCard 
               release={release}
-              onClick={() => onReleaseClick(release)}
-              onDelete={handleDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                onReleaseClick(release);
+              }}
+              onDelete={(e) => handleDelete(e, release.id)}
             />
           </div>
           {role === 'admin' && (
