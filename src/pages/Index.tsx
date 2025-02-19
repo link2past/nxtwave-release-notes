@@ -27,12 +27,16 @@ export default function Index() {
   const [selectedDateFilter, setSelectedDateFilter] = useState("all");
   const { toast } = useToast();
   const { role } = useUserRole();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchReleases();
   }, []);
 
   const handleDeleteRelease = async (id: string) => {
+    if (isDeleting) return; // Prevent multiple simultaneous deletions
+    
+    setIsDeleting(true);
     try {
       const { error } = await supabase
         .from('releases')
@@ -41,7 +45,14 @@ export default function Index() {
 
       if (error) throw error;
 
-      await fetchReleases(); // Refresh the list immediately after deletion
+      // Refresh the releases list
+      await fetchReleases();
+
+      // Update pagination if necessary
+      const totalPages = Math.ceil((releases.length - 1) / ITEMS_PER_PAGE);
+      if (currentPage > totalPages && totalPages > 0) {
+        setCurrentPage(totalPages);
+      }
 
       toast({
         title: "Release deleted",
@@ -54,6 +65,8 @@ export default function Index() {
         description: "Failed to delete the release note.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
