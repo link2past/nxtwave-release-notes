@@ -42,7 +42,11 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
             {format(new Date(release.datetime), "MMM d, yyyy HH:mm")}
           </time>
         </div>
-        {role === 'admin' && <DeleteReleaseButton onDelete={handleDelete} />}
+        {role === 'admin' && (
+          <div className="absolute top-2 right-2">
+            <DeleteReleaseButton onDelete={handleDelete} />
+          </div>
+        )}
       </div>
 
       <h3 className="text-xl font-playfair font-semibold mb-3 text-highlight-purple group-hover:text-highlight-purple/90 transition-colors">

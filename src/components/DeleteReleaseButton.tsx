@@ -18,17 +18,19 @@ interface DeleteReleaseButtonProps {
 }
 
 export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button 
           variant="ghost" 
           size="icon"
-          className="delete-button absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
+          className="delete-button text-muted-foreground hover:text-destructive"
+          onClick={handleDeleteClick}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
