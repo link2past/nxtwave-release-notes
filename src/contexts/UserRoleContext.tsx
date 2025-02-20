@@ -11,10 +11,20 @@ interface UserRoleContextType {
 const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
 
 export function UserRoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<Role>('user');
+  // Initialize from localStorage if available
+  const [role, setRole] = useState<Role>(() => {
+    const savedRole = localStorage.getItem('userRole');
+    return (savedRole === 'admin' || savedRole === 'user') ? savedRole : 'user';
+  });
+
+  // Persist role changes to localStorage
+  const handleSetRole = (newRole: Role) => {
+    setRole(newRole);
+    localStorage.setItem('userRole', newRole);
+  };
 
   return (
-    <UserRoleContext.Provider value={{ role, setRole }}>
+    <UserRoleContext.Provider value={{ role, setRole: handleSetRole }}>
       {children}
     </UserRoleContext.Provider>
   );
