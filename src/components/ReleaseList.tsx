@@ -1,5 +1,6 @@
 
-import { ReleaseCard, ReleaseNote } from "./ReleaseCard";
+import { ReleaseCard } from "./ReleaseCard";
+import type { ReleaseNote } from "@/types/release";
 import { AdminDialog } from "./AdminDialog";
 import { useUserRole } from "@/contexts/UserRoleContext";
 

@@ -3,59 +3,10 @@ import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { MediaDisplay } from "./MediaDisplay";
 import { TagList } from "./TagList";
-import { Trash2, Link } from "lucide-react";
-import { Button } from "./ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useToast } from "./ui/use-toast";
-
-export interface Tag {
-  id: string;
-  name: string;
-  color: string;
-}
-
-export interface Label {
-  id: string;
-  name: string;
-  color: string;
-}
-
-export interface ReleaseNote {
-  id: string;
-  title: string;
-  description: string;
-  datetime: string;
-  category: "feature" | "bugfix" | "enhancement";
-  tags: Tag[];
-  labels: Label[];
-  slug: string;
-  media?: {
-    type: "image" | "video";
-    url: string;
-  }[];
-}
-
-const categoryColors = {
-  feature: "bg-emerald-500 text-white",
-  bugfix: "bg-red-500 text-white",
-  enhancement: "bg-purple-500 text-white",
-} as const;
-
-const categoryLabels = {
-  feature: "Feature",
-  bugfix: "Bug Fix",
-  enhancement: "Enhancement",
-} as const;
+import type { ReleaseNote } from "@/types/release";
+import { CategoryBadge } from "./CategoryBadge";
+import { DeleteReleaseButton } from "./DeleteReleaseButton";
+import { ShareButton } from "./ShareButton";
 
 interface ReleaseCardProps {
   release: ReleaseNote;
@@ -65,34 +16,12 @@ interface ReleaseCardProps {
 
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { role } = useUserRole();
-  const { toast } = useToast();
 
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
       return;
     }
     onClick?.(e);
-  };
-
-  const handleCopyLink = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      const shareableUrl = `${window.location.origin}/releases/${release.slug}`;
-      await navigator.clipboard.writeText(shareableUrl);
-      
-      toast({
-        title: "Link copied!",
-        description: "The shareable link has been copied to your clipboard.",
-      });
-    } catch (error) {
-      console.error('Failed to copy link:', error);
-      toast({
-        title: "Failed to copy link",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -108,49 +37,12 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span 
-            className={`px-3 py-1 text-xs font-medium rounded-full shadow-sm ${categoryColors[release.category]}`}
-          >
-            {categoryLabels[release.category]}
-          </span>
+          <CategoryBadge category={release.category} />
           <time className="text-sm text-muted-foreground font-playfair italic">
             {format(new Date(release.datetime), "MMM d, yyyy HH:mm")}
           </time>
         </div>
-        {role === 'admin' && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="delete-button absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the release note.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+        {role === 'admin' && <DeleteReleaseButton onDelete={handleDelete} />}
       </div>
 
       <h3 className="text-xl font-playfair font-semibold mb-3 text-highlight-purple group-hover:text-highlight-purple/90 transition-colors">
@@ -162,15 +54,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
       />
 
       <div className="flex items-center gap-2 mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          className="copy-link-button font-playfair hover:bg-highlight-yellow/20"
-          onClick={handleCopyLink}
-        >
-          <Link className="h-4 w-4 mr-2" />
-          Copy Link
-        </Button>
+        <ShareButton slug={release.slug} />
       </div>
 
       {release.media && release.media.length > 0 && (
@@ -209,3 +93,5 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
     </div>
   );
 }
+
+export type { ReleaseNote, Tag, Label } from "@/types/release";
