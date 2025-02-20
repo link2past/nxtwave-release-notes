@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { ReleaseList } from "@/components/ReleaseList";
 import { ReleasesFilters } from "@/components/ReleasesFilters";
@@ -17,7 +16,6 @@ export default function Dashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("Fetching releases...");
     fetchReleases();
   }, []);
 
@@ -37,9 +35,6 @@ export default function Dashboard() {
     setDateRange(undefined);
     setSelectedDateFilter("all");
   };
-
-  console.log("Current releases:", releases);
-  console.log("Current filters:", { search, category, sortOrder, dateRange, selectedDateFilter });
 
   return (
     <div className="container mx-auto px-4 py-8">

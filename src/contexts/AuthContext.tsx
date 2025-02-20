@@ -37,57 +37,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const userRole = await getUserRole(newSession.user.id);
         setRole(userRole);
-        // Also store role in localStorage as backup
-        localStorage.setItem('userRole', userRole);
       } catch (error) {
         console.error('Error fetching user role:', error);
-        // If there's an error, try to use the backup from localStorage
-        const savedRole = localStorage.getItem('userRole');
-        if (savedRole === 'admin' || savedRole === 'user') {
-          setRole(savedRole);
-        }
       }
     } else {
-      // Remove session cookie and role on logout/session expiry
+      // Remove session cookie on logout/session expiry
       Cookies.remove(COOKIE_NAME);
-      localStorage.removeItem('userRole');
-      setRole('user');
+      setRole('user'); // Reset role to default
     }
     setSession(newSession);
   };
 
   useEffect(() => {
     const initializeAuth = async () => {
-      try {
-        // Try to get session from cookie first
-        const cookieSession = Cookies.get(COOKIE_NAME);
-        if (cookieSession) {
-          try {
-            const parsedSession = JSON.parse(cookieSession);
-            await handleSession(parsedSession);
-          } catch (error) {
-            console.error('Error parsing session cookie:', error);
-            Cookies.remove(COOKIE_NAME);
-          }
+      // Try to get session from cookie first
+      const cookieSession = Cookies.get(COOKIE_NAME);
+      if (cookieSession) {
+        try {
+          const parsedSession = JSON.parse(cookieSession);
+          await handleSession(parsedSession);
+        } catch (error) {
+          console.error('Error parsing session cookie:', error);
+          Cookies.remove(COOKIE_NAME);
         }
-
-        // Get initial session from Supabase
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          await handleSession(session);
-        } else {
-          // If no session, ensure role is reset
-          localStorage.removeItem('userRole');
-          setRole('user');
-        }
-      } catch (error) {
-        console.error('Error during auth initialization:', error);
-        // Ensure role is reset on error
-        localStorage.removeItem('userRole');
-        setRole('user');
-      } finally {
-        setLoading(false);
       }
+
+      // Get initial session from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      await handleSession(session);
+      setLoading(false);
     };
 
     initializeAuth();
@@ -98,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       await handleSession(session);
+      setLoading(false);
 
       if (event === 'SIGNED_OUT') {
         await handleSession(null);
