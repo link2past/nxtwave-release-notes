@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { type ReleaseNote } from "@/components/ReleaseCard";
 import { ReleaseList } from "@/components/ReleaseList";
@@ -127,18 +128,6 @@ export default function Index() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const clearFilters = () => {
-    setSearch("");
-    setCategory("all");
-    setSortOrder("desc");
-    setDateRange(undefined);
-    setSelectedDateFilter("all");
-  };
-
-  const handleReleaseClick = (release: ReleaseNote) => {
-    setSelectedRelease(release);
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
@@ -159,7 +148,13 @@ export default function Index() {
           onSortChange={setSortOrder}
           onDateRangeChange={setDateRange}
           onDateFilterChange={handleDateFilterChange}
-          onClear={clearFilters}
+          onClear={() => {
+            setSearch("");
+            setCategory("all");
+            setSortOrder("desc");
+            setDateRange(undefined);
+            setSelectedDateFilter("all");
+          }}
         />
 
         <ReleaseList
