@@ -18,10 +18,14 @@ interface DeleteReleaseButtonProps {
 }
 
 export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onDelete();
+  const handleDelete = async () => {
+    try {
+      console.log('DeleteReleaseButton: Initiating delete');
+      await onDelete();
+      console.log('DeleteReleaseButton: Delete completed');
+    } catch (error) {
+      console.error('DeleteReleaseButton: Delete failed:', error);
+    }
   };
 
   return (
@@ -47,14 +51,20 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}>
+          <AlertDialogCancel 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleDelete}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleDelete();
+            }}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Delete
