@@ -60,7 +60,7 @@ export function ReleaseList({
                     e.preventDefault();
                     onReleaseClick(release);
                   }}
-                  onDelete={(e) => handleDelete(e, release.id)}
+                  onDelete={handleDelete}
                 />
               </div>
               {role === 'admin' && (

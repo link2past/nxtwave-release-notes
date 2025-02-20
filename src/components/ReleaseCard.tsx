@@ -60,7 +60,7 @@ const categoryLabels = {
 interface ReleaseCardProps {
   release: ReleaseNote;
   onClick?: (e: React.MouseEvent) => void;
-  onDelete?: (e: React.MouseEvent) => void;
+  onDelete?: (e: React.MouseEvent, id: string) => void;
 }
 
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
@@ -98,7 +98,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onDelete?.(e);
+    onDelete?.(e, release.id);
   };
 
   return (
