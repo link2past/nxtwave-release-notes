@@ -13,14 +13,6 @@ interface ReleaseListProps {
 export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteRelease }: ReleaseListProps) {
   const { role } = useUserRole();
 
-  if (releases.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        No releases found matching your criteria
-      </div>
-    );
-  }
-
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -32,31 +24,45 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteR
   };
 
   return (
-    <div className="grid gap-6">
-      {releases.map((release) => (
-        <div 
-          key={release.id} 
-          className="flex items-start gap-4 w-full"
-          onClick={(e) => {
-            e.preventDefault();
-            onReleaseClick(release);
-          }}
-        >
-          <div className="flex-1">
-            <ReleaseCard 
-              release={release}
+    <div className="space-y-6">
+      {role === 'admin' && (
+        <div className="flex justify-end mb-6">
+          <AdminDialog onSave={onSaveRelease} />
+        </div>
+      )}
+      
+      {releases.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          No releases found matching your criteria
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          {releases.map((release) => (
+            <div 
+              key={release.id} 
+              className="flex items-start gap-4 w-full"
               onClick={(e) => {
                 e.preventDefault();
                 onReleaseClick(release);
               }}
-              onDelete={(e) => handleDelete(e, release.id)}
-            />
-          </div>
-          {role === 'admin' && (
-            <AdminDialog release={release} onSave={onSaveRelease} />
-          )}
+            >
+              <div className="flex-1">
+                <ReleaseCard 
+                  release={release}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onReleaseClick(release);
+                  }}
+                  onDelete={(e) => handleDelete(e, release.id)}
+                />
+              </div>
+              {role === 'admin' && (
+                <AdminDialog release={release} onSave={onSaveRelease} />
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
