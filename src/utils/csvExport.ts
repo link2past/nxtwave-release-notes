@@ -10,26 +10,19 @@ const stripHtml = (html: string) => {
 
 export const downloadReleasesAsCSV = (releases: ReleaseNote[]) => {
   try {
-    console.log('Preparing CSV download for releases:', releases);
-    
     // Include all relevant fields
     const headers = ["Title", "Description", "Category", "Date", "Tags", "Labels"];
-    
-    // Create header row
-    let csvContent = headers.join(",") + "\n";
-    
-    // Add data rows
-    releases.forEach(release => {
-      const row = [
+    const csvContent = [
+      headers.join(","),
+      ...releases.map(release => [
         `"${release.title.replace(/"/g, '""')}"`,
         `"${stripHtml(release.description).replace(/"/g, '""')}"`,
         `"${release.category}"`,
         `"${new Date(release.datetime).toLocaleString()}"`,
-        `"${(release.tags || []).map(tag => tag.name).join(', ')}"`,
-        `"${(release.labels || []).map(label => label.name).join(', ')}"`
-      ];
-      csvContent += row.join(",") + "\n";
-    });
+        `"${release.tags.map(tag => tag.name).join(', ')}"`,
+        `"${release.labels.map(label => label.name).join(', ')}"`
+      ].join(","))
+    ].join("\n");
 
     const blob = new Blob(['\ufeff' + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);

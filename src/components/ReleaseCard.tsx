@@ -11,7 +11,7 @@ import { ShareButton } from "./ShareButton";
 interface ReleaseCardProps {
   release: ReleaseNote;
   onClick?: () => void;
-  onDelete: (id: string) => Promise<void>;
+  onDelete?: (id: string) => void;
 }
 
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
@@ -24,14 +24,10 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
     onClick?.();
   };
 
-  const handleDelete = async () => {
-    try {
-      console.log('ReleaseCard: Deleting release:', release.id);
-      await onDelete(release.id);
-      console.log('ReleaseCard: Delete successful');
-    } catch (error) {
-      console.error('ReleaseCard: Delete failed:', error);
-      throw error; // Re-throw to be handled by the DeleteReleaseButton component
+  const handleDelete = () => {
+    console.log('ReleaseCard: Delete clicked for release:', release.id);
+    if (onDelete) {
+      onDelete(release.id);
     }
   };
 
