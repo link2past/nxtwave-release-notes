@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { ReleaseList } from "@/components/ReleaseList";
 import { ReleasesFilters } from "@/components/ReleasesFilters";
@@ -7,7 +8,7 @@ import type { ReleaseNote } from "@/types/release";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Dashboard() {
-  const { releases, fetchReleases, handleSaveRelease } = useReleases();
+  const { releases, fetchReleases, handleSaveRelease, handleDeleteRelease } = useReleases();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -21,11 +22,24 @@ export default function Dashboard() {
 
   const handleReleaseClick = (release: ReleaseNote) => {
     console.log('Release clicked:', release);
-    // Implement detailed view if needed
   };
 
-  const handleDeleteRelease = async (id: string) => {
-    // Implement delete functionality if needed
+  const handleDelete = async (id: string) => {
+    try {
+      console.log('Dashboard: Handling delete for release:', id);
+      await handleDeleteRelease(id);
+      toast({
+        title: "Success",
+        description: "Release note deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting release:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete release note. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const clearFilters = () => {
@@ -93,7 +107,7 @@ export default function Dashboard() {
           })}
         onReleaseClick={handleReleaseClick}
         onSaveRelease={handleSaveRelease}
-        onDeleteRelease={handleDeleteRelease}
+        onDeleteRelease={handleDelete}
       />
     </div>
   );

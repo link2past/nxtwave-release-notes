@@ -18,8 +18,6 @@ interface DeleteReleaseButtonProps {
 }
 
 export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
-  console.log("DeleteReleaseButton rendered");
-
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -34,7 +32,6 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           size="icon"
           className="delete-button text-muted-foreground hover:text-destructive"
           onClick={(e) => {
-            console.log("Delete button clicked");
             e.preventDefault();
             e.stopPropagation();
           }}
@@ -53,7 +50,6 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           <AlertDialogCancel onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log("Delete cancelled");
           }}>
             Cancel
           </AlertDialogCancel>

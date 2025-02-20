@@ -21,14 +21,6 @@ export function ReleaseList({
 }: ReleaseListProps) {
   const { role } = useUserRole();
 
-  const handleDelete = async (id: string) => {
-    try {
-      await onDeleteRelease(id);
-    } catch (error) {
-      console.error('Error in ReleaseList delete handler:', error);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {role === 'admin' && showNewReleaseButton && (
@@ -52,7 +44,7 @@ export function ReleaseList({
                 <ReleaseCard 
                   release={release}
                   onClick={() => onReleaseClick(release)}
-                  onDelete={handleDelete}
+                  onDelete={() => onDeleteRelease(release.id)}
                 />
               </div>
               {role === 'admin' && (
