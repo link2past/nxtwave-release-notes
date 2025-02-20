@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       // Remove session cookie on logout/session expiry
       Cookies.remove(COOKIE_NAME);
+      localStorage.removeItem('supabase.auth.token');
     }
     setSession(newSession);
   };
@@ -68,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         navigate('/login');
       }
 
-      // Handle refresh token failures
+      // Handle session expired
       if (event === 'TOKEN_REFRESHED' && !session) {
         console.log('Token refresh failed');
         toast({
@@ -76,7 +77,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: "Please sign in again to continue.",
           variant: "destructive",
         });
-        await supabase.auth.signOut();
         handleSession(null);
         navigate('/login');
       }
