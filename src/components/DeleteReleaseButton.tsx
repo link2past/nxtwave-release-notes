@@ -14,11 +14,17 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface DeleteReleaseButtonProps {
-  onDelete: (e: React.MouseEvent) => void;
+  onDelete: () => void;
 }
 
 export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
   console.log("DeleteReleaseButton rendered");
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete();
+  };
 
   return (
     <AlertDialog>
@@ -44,16 +50,15 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => console.log("Delete cancelled")}>
+          <AlertDialogCancel onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Delete cancelled");
+          }}>
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={(e) => {
-              console.log("Delete confirmed in dialog");
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(e);
-            }}
+            onClick={handleDelete}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Delete

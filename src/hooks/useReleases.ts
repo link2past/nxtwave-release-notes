@@ -61,7 +61,7 @@ export function useReleases() {
       }
 
       console.log('Release deleted successfully:', id);
-      await fetchReleases(); // Refresh the releases list
+      setReleases(prevReleases => prevReleases.filter(release => release.id !== id));
 
       toast({
         title: "Success",
@@ -74,6 +74,7 @@ export function useReleases() {
         description: "Failed to delete release note. Please try again.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 

@@ -10,8 +10,8 @@ import { ShareButton } from "./ShareButton";
 
 interface ReleaseCardProps {
   release: ReleaseNote;
-  onClick?: (e: React.MouseEvent) => void;
-  onDelete?: (e: React.MouseEvent, id: string) => void;
+  onClick?: () => void;
+  onDelete?: (id: string) => void;
 }
 
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
@@ -26,19 +26,12 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
       return;
     }
     console.log("Card clicked");
-    onClick?.(e);
+    onClick?.();
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    console.log("Handle delete called in ReleaseCard");
-    e.preventDefault();
-    e.stopPropagation();
-    if (onDelete) {
-      console.log("Calling onDelete with release id:", release.id);
-      onDelete(e, release.id);
-    } else {
-      console.log("onDelete handler is not defined");
-    }
+  const handleDelete = () => {
+    console.log("Handle delete called in ReleaseCard for id:", release.id);
+    onDelete?.(release.id);
   };
 
   return (
@@ -108,5 +101,3 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
     </div>
   );
 }
-
-export type { ReleaseNote, Tag, Label } from "@/types/release";
