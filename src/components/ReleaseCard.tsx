@@ -27,7 +27,9 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onDelete?.(e, release.id);
+    if (onDelete) {
+      onDelete(e, release.id);
+    }
   };
 
   return (

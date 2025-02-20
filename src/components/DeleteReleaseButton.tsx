@@ -18,11 +18,6 @@ interface DeleteReleaseButtonProps {
 }
 
 export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -30,12 +25,15 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           variant="ghost" 
           size="icon"
           className="delete-button text-muted-foreground hover:text-destructive"
-          onClick={handleDeleteClick}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -43,9 +41,13 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={onDelete}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(e);
+            }}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Delete
