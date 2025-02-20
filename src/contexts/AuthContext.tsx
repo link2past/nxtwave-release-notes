@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 interface AuthContextType {
   session: Session | null;
@@ -11,6 +12,8 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const COOKIE_NAME = 'sb-session';
+const COOKIE_EXPIRY = 30; // days
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -18,10 +21,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const handleSession = (newSession: Session | null) => {
+    if (newSession) {
+      // Store session in cookie with 30 days expiry
+      Cookies.set(COOKIE_NAME, JSON.stringify(newSession), {
+        expires: COOKIE_EXPIRY,
+        secure: true,
+        sameSite: 'strict'
+      });
+    } else {
+      // Remove session cookie on logout/session expiry
+      Cookies.remove(COOKIE_NAME);
+    }
+    setSession(newSession);
+  };
+
   useEffect(() => {
-    // Get initial session
+    // Try to get session from cookie first
+    const cookieSession = Cookies.get(COOKIE_NAME);
+    if (cookieSession) {
+      try {
+        const parsedSession = JSON.parse(cookieSession);
+        setSession(parsedSession);
+      } catch (error) {
+        console.error('Error parsing session cookie:', error);
+        Cookies.remove(COOKIE_NAME);
+      }
+    }
+
+    // Get initial session from Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+      handleSession(session);
       setLoading(false);
     });
 
@@ -30,11 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
-      setSession(session);
+      handleSession(session);
       setLoading(false);
 
       if (event === 'SIGNED_OUT') {
-        setSession(null);
+        handleSession(null);
         navigate('/login');
       }
 
@@ -47,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
         await supabase.auth.signOut();
-        setSession(null);
+        handleSession(null);
         navigate('/login');
       }
     });
