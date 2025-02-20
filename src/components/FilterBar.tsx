@@ -41,6 +41,19 @@ export function FilterBar({
   selectedDateFilter,
   onDateFilterChange,
 }: FilterBarProps) {
+  const handleDateSelect = (range: DateRange | undefined) => {
+    if (range?.from && range.to) {
+      // Ensure the end date is inclusive by setting it to the end of the day
+      const adjustedRange = {
+        from: range.from,
+        to: new Date(range.to.setHours(23, 59, 59, 999))
+      };
+      onDateRangeChange(adjustedRange);
+    } else {
+      onDateRangeChange(range);
+    }
+  };
+
   return (
     <div className="flex items-center gap-4 flex-wrap">
       <Select value={category} onValueChange={onCategoryChange}>
@@ -91,7 +104,11 @@ export function FilterBar({
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {dateRange?.from ? (
-                format(dateRange.from, "MMM d, yyyy")
+                dateRange.to ? (
+                  `${format(dateRange.from, "MMM d, yyyy")} - ${format(dateRange.to, "MMM d, yyyy")}`
+                ) : (
+                  format(dateRange.from, "MMM d, yyyy")
+                )
               ) : (
                 <span>Pick a date range</span>
               )}
@@ -103,7 +120,7 @@ export function FilterBar({
               mode="range"
               defaultMonth={dateRange?.from ? dateRange.from : new Date()}
               selected={dateRange}
-              onSelect={onDateRangeChange}
+              onSelect={handleDateSelect}
               numberOfMonths={2}
               className="dark:bg-background dark:text-foreground dark:border-border"
             />
