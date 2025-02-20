@@ -19,7 +19,7 @@ export function ReleaseModals({
   return (
     <>
       <Dialog open={!!selectedRelease} onOpenChange={() => onCloseRelease()}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[80vw] w-full">
           {selectedRelease && (
             <div className="space-y-6">
               <DialogHeader>

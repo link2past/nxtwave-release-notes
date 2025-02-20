@@ -8,9 +8,16 @@ interface ReleaseListProps {
   onSaveRelease: (release: Partial<ReleaseNote>) => void;
   onReleaseClick: (release: ReleaseNote) => void;
   onDeleteRelease: (id: string) => void;
+  showNewReleaseButton?: boolean;
 }
 
-export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteRelease }: ReleaseListProps) {
+export function ReleaseList({ 
+  releases, 
+  onSaveRelease, 
+  onReleaseClick, 
+  onDeleteRelease,
+  showNewReleaseButton = true 
+}: ReleaseListProps) {
   const { role } = useUserRole();
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
@@ -25,7 +32,7 @@ export function ReleaseList({ releases, onSaveRelease, onReleaseClick, onDeleteR
 
   return (
     <div className="space-y-6">
-      {role === 'admin' && (
+      {role === 'admin' && showNewReleaseButton && (
         <div className="flex justify-end mb-6">
           <AdminDialog onSave={onSaveRelease} />
         </div>

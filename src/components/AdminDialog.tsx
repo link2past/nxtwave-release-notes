@@ -145,7 +145,7 @@ export function AdminDialog({ release, onSave }: AdminDialogProps) {
           {release ? "Edit Release" : "New Release"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <DialogContent className="sm:max-w-[80vw] max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>{release ? "Edit Release" : "Create New Release"}</DialogTitle>
         </DialogHeader>

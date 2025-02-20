@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ClickUpIntegration } from "@/components/ClickUpIntegration";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { AdminDialog } from "@/components/AdminDialog";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -132,7 +133,8 @@ export default function Index() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="container py-8 px-4 mx-auto max-w-6xl">
         {role === 'admin' && (
-          <div className="mb-8 flex justify-end">
+          <div className="mb-8 flex justify-end items-center gap-4">
+            <AdminDialog onSave={handleSaveRelease} />
             <ClickUpIntegration />
           </div>
         )}
@@ -162,6 +164,7 @@ export default function Index() {
           onSaveRelease={handleSaveRelease}
           onReleaseClick={setSelectedRelease}
           onDeleteRelease={handleDeleteRelease}
+          showNewReleaseButton={false}
         />
 
         {totalPages > 1 && (
