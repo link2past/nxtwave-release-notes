@@ -68,7 +68,8 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { toast } = useToast();
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
+    const target = e.target as HTMLElement;
+    if (target.closest('.delete-button, .copy-link-button, [role="dialog"]')) {
       return;
     }
     onClick?.(e);
