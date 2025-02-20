@@ -18,6 +18,8 @@ interface DeleteReleaseButtonProps {
 }
 
 export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
+  console.log("DeleteReleaseButton rendered");
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -26,6 +28,7 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           size="icon"
           className="delete-button text-muted-foreground hover:text-destructive"
           onClick={(e) => {
+            console.log("Delete button clicked");
             e.preventDefault();
             e.stopPropagation();
           }}
@@ -41,9 +44,12 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => console.log("Delete cancelled")}>
+            Cancel
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
+              console.log("Delete confirmed in dialog");
               e.preventDefault();
               e.stopPropagation();
               onDelete(e);

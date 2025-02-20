@@ -17,18 +17,27 @@ interface ReleaseCardProps {
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { role } = useUserRole();
 
+  console.log("ReleaseCard rendered for release:", release.id);
+  console.log("onDelete prop exists:", !!onDelete);
+
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
+      console.log("Click intercepted by delete or copy button");
       return;
     }
+    console.log("Card clicked");
     onClick?.(e);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
+    console.log("Handle delete called in ReleaseCard");
     e.preventDefault();
     e.stopPropagation();
     if (onDelete) {
+      console.log("Calling onDelete with release id:", release.id);
       onDelete(e, release.id);
+    } else {
+      console.log("onDelete handler is not defined");
     }
   };
 
