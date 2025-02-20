@@ -8,7 +8,6 @@ import { useToast } from "./ui/use-toast";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { useReleases } from "@/hooks/useReleases";
 import { downloadReleasesAsCSV } from "@/utils/csvExport";
-import { useAuth } from "@/contexts/AuthContext";
 
 export function NavbarActions() {
   const navigate = useNavigate();
@@ -16,36 +15,24 @@ export function NavbarActions() {
   const { theme, setTheme } = useTheme();
   const { role } = useUserRole();
   const { releases } = useReleases();
-  const { session } = useAuth();
 
   const handleLogout = async () => {
     try {
-      if (!session) {
-        navigate('/login');
-        return;
-      }
-
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
-      // Clear any local storage or cookies if needed
-      localStorage.removeItem('supabase.auth.token');
       
       navigate('/login');
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error logging out:', error);
       toast({
         title: "Error",
         description: "Failed to logout. Please try again.",
         variant: "destructive",
       });
-      
-      // Force navigate to login page if we can't properly logout
-      navigate('/login');
     }
   };
 
