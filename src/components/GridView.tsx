@@ -1,5 +1,4 @@
-
-import { ReleaseNote } from "./ReleaseCard";
+import { ReleaseNote } from "@/types/release";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { format } from "date-fns";

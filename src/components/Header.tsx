@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { AdminDialog } from "./AdminDialog";
 import { RoleSelector } from "./RoleSelector";
 import { useUserRole } from "@/contexts/UserRoleContext";
-import { ReleaseNote } from "./ReleaseCard";
+import { ReleaseNote } from "@/types/release";
 
 interface HeaderProps {
   onSaveRelease: (release: Partial<ReleaseNote>) => void;

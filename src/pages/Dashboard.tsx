@@ -3,7 +3,7 @@ import { ReleaseList } from "@/components/ReleaseList";
 import { ReleasesFilters } from "@/components/ReleasesFilters";
 import { useReleases } from "@/hooks/useReleases";
 import { DateRange } from "react-day-picker";
-import { ReleaseNote } from "@/components/ReleaseCard";
+import type { ReleaseNote } from "@/types/release";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Dashboard() {

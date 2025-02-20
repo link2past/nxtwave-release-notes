@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { type ReleaseNote } from "@/components/ReleaseCard";
+import { type ReleaseNote } from "@/types/release";
 import { ReleaseList } from "@/components/ReleaseList";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths, parseISO } from "date-fns";

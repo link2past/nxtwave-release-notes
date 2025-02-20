@@ -1,5 +1,4 @@
-
-import { ReleaseNote } from "./ReleaseCard";
+import { ReleaseNote } from "@/types/release";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { format } from "date-fns";
 

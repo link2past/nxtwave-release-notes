@@ -1,5 +1,4 @@
-
-import { ReleaseNote } from "@/components/ReleaseCard";
+import { ReleaseNote } from "@/types/release";
 import { useToast } from "@/components/ui/use-toast";
 
 export const downloadReleasesAsCSV = (releases: ReleaseNote[]) => {

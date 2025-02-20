@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { ReleaseNote, Tag } from "./ReleaseCard";
+import type { ReleaseNote, Tag } from "@/types/release";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { RichTextEditor } from "./RichTextEditor";
