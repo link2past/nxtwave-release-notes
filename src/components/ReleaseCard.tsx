@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { MediaDisplay } from "./MediaDisplay";
 import { TagList } from "./TagList";
-import type { ReleaseNote } from "@/types/release";
+import { type ReleaseNote, type Tag, type Label } from "@/types/release";
 import { CategoryBadge } from "./CategoryBadge";
 import { DeleteReleaseButton } from "./DeleteReleaseButton";
 import { ShareButton } from "./ShareButton";
