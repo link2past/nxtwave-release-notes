@@ -52,7 +52,7 @@ export function useReleases() {
 
   const handleDeleteRelease = async (id: string) => {
     try {
-      console.log('Attempting to delete release:', id);
+      console.log('useReleases: Attempting to delete release:', id);
       
       const result = await releasesService.deleteRelease(id);
       
@@ -60,21 +60,13 @@ export function useReleases() {
         throw new Error(result.error);
       }
 
-      console.log('Release deleted successfully:', id);
+      console.log('useReleases: Release deleted successfully:', id);
       setReleases(prevReleases => prevReleases.filter(release => release.id !== id));
 
-      toast({
-        title: "Success",
-        description: "Release note deleted successfully.",
-      });
+      return Promise.resolve();
     } catch (error) {
-      console.error('Error deleting release:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete release note. Please try again.",
-        variant: "destructive",
-      });
-      throw error;
+      console.error('useReleases: Error deleting release:', error);
+      return Promise.reject(error);
     }
   };
 

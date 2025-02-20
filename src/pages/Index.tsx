@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { type ReleaseNote } from "@/types/release";
+import type { ReleaseNote } from "@/types/release";
 import { ReleaseList } from "@/components/ReleaseList";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths, parseISO } from "date-fns";
@@ -34,7 +35,7 @@ export default function Index() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (isDeleting) return; // Prevent multiple simultaneous deletions
+    if (isDeleting) return;
     
     setIsDeleting(true);
     try {
@@ -60,37 +61,6 @@ export default function Index() {
       });
     } finally {
       setIsDeleting(false);
-    }
-  };
-
-  const handleDateFilterChange = (value: string) => {
-    setSelectedDateFilter(value);
-    const now = new Date();
-    let start: Date | undefined;
-    let end: Date | undefined;
-
-    switch (value) {
-      case "today":
-        start = startOfDay(now);
-        end = endOfDay(now);
-        break;
-      case "currentMonth":
-        start = startOfMonth(now);
-        end = endOfMonth(now);
-        break;
-      case "lastMonth":
-        start = startOfMonth(subMonths(now, 1));
-        end = endOfMonth(subMonths(now, 1));
-        break;
-      case "custom":
-        return;
-      default:
-        setDateRange(undefined);
-        return;
-    }
-
-    if (start && end) {
-      setDateRange({ from: start, to: end });
     }
   };
 
@@ -200,3 +170,4 @@ export default function Index() {
     </div>
   );
 }
+
