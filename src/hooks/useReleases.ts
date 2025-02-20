@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReleaseNote } from "@/components/ReleaseCard";
@@ -209,9 +208,46 @@ export function useReleases() {
     }
   };
 
+  const handleDeleteRelease = async (id: string) => {
+    try {
+      console.log('Attempting to delete release:', id);
+      
+      // First, delete related records in release_tags and release_labels
+      await supabase.from('release_tags').delete().eq('release_id', id);
+      await supabase.from('release_labels').delete().eq('release_id', id);
+      
+      // Delete media associated with the release
+      await supabase.from('media').delete().eq('release_id', id);
+      
+      // Finally, delete the release itself
+      const { error: deleteError } = await supabase
+        .from('releases')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      console.log('Release deleted successfully:', id);
+      await fetchReleases(); // Refresh the releases list
+
+      toast({
+        title: "Success",
+        description: "Release note deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting release:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete release note. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     releases,
     fetchReleases,
-    handleSaveRelease
+    handleSaveRelease,
+    handleDeleteRelease, // Export the delete function
   };
 }

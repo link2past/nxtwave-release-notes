@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { type ReleaseNote } from "@/components/ReleaseCard";
 import { ReleaseList } from "@/components/ReleaseList";
@@ -17,7 +16,7 @@ import { AdminDialog } from "@/components/AdminDialog";
 const ITEMS_PER_PAGE = 8;
 
 export default function Index() {
-  const { releases, fetchReleases, handleSaveRelease } = useReleases();
+  const { releases, fetchReleases, handleSaveRelease, handleDeleteRelease } = useReleases();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -34,21 +33,14 @@ export default function Index() {
     fetchReleases();
   }, []);
 
-  const handleDeleteRelease = async (id: string) => {
+  const handleDelete = async (id: string) => {
     if (isDeleting) return; // Prevent multiple simultaneous deletions
     
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from('releases')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      // Refresh the releases list
-      await fetchReleases();
-
+      console.log('Index page: Handling delete for release:', id);
+      await handleDeleteRelease(id);
+      
       // Update pagination if necessary
       const totalPages = Math.ceil((releases.length - 1) / ITEMS_PER_PAGE);
       if (currentPage > totalPages && totalPages > 0) {
@@ -163,7 +155,7 @@ export default function Index() {
           releases={paginatedReleases}
           onSaveRelease={handleSaveRelease}
           onReleaseClick={setSelectedRelease}
-          onDeleteRelease={handleDeleteRelease}
+          onDeleteRelease={handleDelete}
           showNewReleaseButton={false}
         />
 
