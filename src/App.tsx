@@ -1,51 +1,28 @@
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
+import { BrowserRouter as Router } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { UserRoleProvider } from "@/contexts/UserRoleContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { NavBar } from "@/components/NavBar";
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import Dashboard from "@/pages/Dashboard";
-import RegistrationChoice from "@/pages/RegistrationChoice";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { ThemeProvider } from "next-themes";
+import "./App.css";
+import { AuthProvider } from "./contexts/AuthContext";
+import { UserRoleProvider } from "./contexts/UserRoleContext";
+import { NavBar } from "./components/NavBar";
+import Index from "./pages/Index";
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider defaultTheme="system" attribute="class">
       <Router>
-        <AuthProvider>
-          <UserRoleProvider>
-            <NavBar />
-            <div className="pt-16"> {/* Add padding to account for fixed navbar */}
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<RegistrationChoice />} />
-                <Route path="/register/:type" element={<Register />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Index />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
+        <UserRoleProvider>
+          <AuthProvider>
+            <div className="min-h-screen bg-background font-sans antialiased">
+              <NavBar />
+              <div className="pt-16">
+                <Index />
+              </div>
+              <Toaster />
             </div>
-          </UserRoleProvider>
-          <Toaster />
-        </AuthProvider>
+          </AuthProvider>
+        </UserRoleProvider>
       </Router>
     </ThemeProvider>
   );
