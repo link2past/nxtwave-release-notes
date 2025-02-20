@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'playfair': ['Playfair Display', 'serif'],
+        'sans': ['"Century Gothic"', 'CenturyGothic', 'AppleGothic', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -52,10 +57,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        category: {
-          feature: "#10b981",
-          bugfix: "#ef4444",
-          enhancement: "#8b5cf6",
+        highlight: {
+          purple: '#9b87f5',
+          orange: '#F97316',
+          yellow: '#FEF7CD',
         },
       },
       borderRadius: {

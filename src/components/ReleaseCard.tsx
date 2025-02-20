@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { MediaDisplay } from "./MediaDisplay";
 import { TagList } from "./TagList";
-import { type ReleaseNote, type Tag, type Label } from "@/types/release";
+import { type ReleaseNote } from "@/types/release";
 import { CategoryBadge } from "./CategoryBadge";
 import { DeleteReleaseButton } from "./DeleteReleaseButton";
 import { ShareButton } from "./ShareButton";
@@ -17,47 +17,44 @@ interface ReleaseCardProps {
 export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { role } = useUserRole();
 
-  console.log("ReleaseCard rendered for release:", release.id);
-  console.log("onDelete prop exists:", !!onDelete);
-
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
-      console.log("Click intercepted by delete or copy button");
       return;
     }
-    console.log("Card clicked");
     onClick?.();
   };
 
   const handleDelete = () => {
-    console.log("Handle delete called in ReleaseCard for id:", release.id);
-    onDelete?.(release.id);
+    console.log('ReleaseCard: Delete clicked for release:', release.id);
+    if (onDelete) {
+      onDelete(release.id);
+    }
   };
 
   return (
     <div 
       className="w-full p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50 backdrop-blur-sm cursor-pointer relative group"
-      onClick={handleCardClick}
+      onClick={handleClick}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CategoryBadge category={release.category} />
-          <time className="text-sm text-muted-foreground font-playfair italic">
+          <time className="text-sm text-muted-foreground font-sans italic">
             {format(new Date(release.datetime), "MMM d, yyyy HH:mm")}
           </time>
         </div>
         {role === 'admin' && (
-          <div className="absolute top-2 right-2">
+          <div className="flex items-center gap-2">
             <DeleteReleaseButton onDelete={handleDelete} />
           </div>
         )}
       </div>
 
-      <h3 className="text-xl font-playfair font-semibold mb-3 text-highlight-purple group-hover:text-highlight-purple/90 transition-colors">
+      <h3 className="text-xl font-sans font-semibold mb-3 text-highlight-purple group-hover:text-highlight-purple/90 transition-colors">
         {release.title}
       </h3>
       <div 
-        className="text-muted-foreground mb-4 leading-relaxed line-clamp-2 prose prose-sm dark:prose-invert font-playfair"
+        className="text-muted-foreground mb-4 leading-relaxed line-clamp-2 prose prose-sm dark:prose-invert font-sans"
         dangerouslySetInnerHTML={{ __html: release.description }}
       />
 
@@ -72,12 +69,12 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
       <div className="space-y-3">
         {release.labels && release.labels.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-2 font-playfair">Labels</h4>
+            <h4 className="text-sm font-medium mb-2 font-sans">Labels</h4>
             <div className="flex flex-wrap gap-2">
               {release.labels.map((label) => (
                 <span
                   key={label.id}
-                  className="px-3 py-1 text-xs rounded-full transition-colors duration-200 font-playfair"
+                  className="px-3 py-1 text-xs rounded-full transition-colors duration-200 font-sans"
                   style={{ 
                     backgroundColor: `${label.color}20`, 
                     color: label.color,
@@ -93,7 +90,7 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
 
         {release.tags && release.tags.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-2 font-playfair">Tags</h4>
+            <h4 className="text-sm font-medium mb-2 font-sans">Tags</h4>
             <TagList tags={release.tags} />
           </div>
         )}

@@ -1,9 +1,8 @@
+
 import { ReleaseNote } from "@/types/release";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export const downloadReleasesAsCSV = (releases: ReleaseNote[]) => {
-  const { toast } = useToast();
-  
   try {
     const headers = ["Title", "Description", "Category", "Date"];
     const csvContent = [
