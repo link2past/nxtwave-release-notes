@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { type ReleaseNote } from "@/components/ReleaseCard";
 import { ReleaseList } from "@/components/ReleaseList";
@@ -35,7 +34,7 @@ export default function Index() {
   }, []);
 
   const handleDeleteRelease = async (id: string) => {
-    if (isDeleting) return; // Prevent multiple simultaneous deletions
+    if (isDeleting) return;
     
     setIsDeleting(true);
     try {
@@ -46,10 +45,8 @@ export default function Index() {
 
       if (error) throw error;
 
-      // Refresh the releases list
       await fetchReleases();
 
-      // Update pagination if necessary
       const totalPages = Math.ceil((releases.length - 1) / ITEMS_PER_PAGE);
       if (currentPage > totalPages && totalPages > 0) {
         setCurrentPage(totalPages);
