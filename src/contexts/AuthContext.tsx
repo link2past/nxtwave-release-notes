@@ -5,6 +5,8 @@ import { Session } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import { getUserRole } from "@/utils/auth";
+import { useUserRole } from "./UserRoleContext";
 
 interface AuthContextType {
   session: Session | null;
@@ -20,8 +22,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { setRole } = useUserRole();
 
-  const handleSession = (newSession: Session | null) => {
+  const handleSession = async (newSession: Session | null) => {
     if (newSession) {
       // Store session in cookie with 30 days expiry
       Cookies.set(COOKIE_NAME, JSON.stringify(newSession), {
@@ -29,42 +32,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         secure: true,
         sameSite: 'strict'
       });
+      
+      // Fetch and set user role
+      try {
+        const userRole = await getUserRole(newSession.user.id);
+        setRole(userRole);
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      }
     } else {
       // Remove session cookie on logout/session expiry
       Cookies.remove(COOKIE_NAME);
+      setRole('user'); // Reset role to default
     }
     setSession(newSession);
   };
 
   useEffect(() => {
-    // Try to get session from cookie first
-    const cookieSession = Cookies.get(COOKIE_NAME);
-    if (cookieSession) {
-      try {
-        const parsedSession = JSON.parse(cookieSession);
-        setSession(parsedSession);
-      } catch (error) {
-        console.error('Error parsing session cookie:', error);
-        Cookies.remove(COOKIE_NAME);
+    const initializeAuth = async () => {
+      // Try to get session from cookie first
+      const cookieSession = Cookies.get(COOKIE_NAME);
+      if (cookieSession) {
+        try {
+          const parsedSession = JSON.parse(cookieSession);
+          await handleSession(parsedSession);
+        } catch (error) {
+          console.error('Error parsing session cookie:', error);
+          Cookies.remove(COOKIE_NAME);
+        }
       }
-    }
 
-    // Get initial session from Supabase
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleSession(session);
+      // Get initial session from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      await handleSession(session);
       setLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
-      handleSession(session);
+      await handleSession(session);
       setLoading(false);
 
       if (event === 'SIGNED_OUT') {
-        handleSession(null);
+        await handleSession(null);
         navigate('/login');
       }
 
@@ -77,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
         await supabase.auth.signOut();
-        handleSession(null);
+        await handleSession(null);
         navigate('/login');
       }
     });
@@ -85,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, setRole]);
 
   return (
     <AuthContext.Provider value={{ session, loading }}>
