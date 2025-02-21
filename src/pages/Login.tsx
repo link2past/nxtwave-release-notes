@@ -72,6 +72,12 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg border border-border/50">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-gradient-primary">
+            Welcome to Nxtwave Release Notes
+          </h1>
+        </div>
+
         <div className="flex flex-col space-y-6">
           <AuthForm
             email={email}
