@@ -172,24 +172,30 @@ export const releasesService: ReleasesApi = {
 
   deleteRelease: async (id: string): Promise<DeleteReleaseResponse> => {
     try {
-      // First, delete related records in release_tags and release_labels
-      await supabase.from('release_tags').delete().eq('release_id', id);
-      await supabase.from('release_labels').delete().eq('release_id', id);
+      console.log('Deleting release with ID:', id);
       
-      // Delete media associated with the release
-      await supabase.from('media').delete().eq('release_id', id);
+      // First, delete related records
+      await Promise.all([
+        supabase.from('release_tags').delete().eq('release_id', id),
+        supabase.from('release_labels').delete().eq('release_id', id),
+        supabase.from('media').delete().eq('release_id', id)
+      ]);
       
-      // Finally, delete the release itself
+      // Then delete the release itself
       const { error: deleteError } = await supabase
         .from('releases')
         .delete()
         .eq('id', id);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Error deleting release:', deleteError);
+        throw deleteError;
+      }
 
+      console.log('Successfully deleted release:', id);
       return { success: true };
     } catch (error) {
-      console.error('Error deleting release:', error);
+      console.error('Error in deleteRelease:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error occurred' 
