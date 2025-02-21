@@ -10,7 +10,7 @@ export function Logo() {
         <img
           src={`/lovable-uploads/${
             theme === 'dark'
-              ? 'b445fdbb-a1a2-48fe-a01c-2df81bcec56d.png' 
+              ? '8c65e666-6798-4534-9667-b3c7fdd98a33.png' 
               : 'ba9e62ce-3ed4-44e5-b603-800ee7886021.png'
           }`}
           alt="NXT WAVE Logo"
