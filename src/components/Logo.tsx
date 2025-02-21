@@ -8,13 +8,9 @@ export function Logo() {
     <div className="flex items-center gap-4">
       <div className="w-24 h-12 dark:filter dark:drop-shadow-[0_0_0.3rem_#ffffff70] transition-all duration-300">
         <img
-          src={`/lovable-uploads/${
-            theme === 'dark'
-              ? '8c65e666-6798-4534-9667-b3c7fdd98a33.png' 
-              : 'ba9e62ce-3ed4-44e5-b603-800ee7886021.png'
-          }`}
+          src={`/lovable-uploads/63db8ac2-b1fb-4d05-a4dc-38861a9d6ed9.png`}
           alt="NXT WAVE Logo"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain brightness-0 invert dark:brightness-100 dark:invert-0"
         />
       </div>
       <h1 className="text-xl font-semibold">Release Notes</h1>
