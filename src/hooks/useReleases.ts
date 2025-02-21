@@ -50,7 +50,7 @@ export function useReleases() {
     }
   };
 
-  const handleDeleteRelease = async (id: string) => {
+  const handleDeleteRelease = async (id: string): Promise<void> => {
     try {
       console.log('useReleases: Attempting to delete release:', id);
       
@@ -62,7 +62,7 @@ export function useReleases() {
 
       console.log('useReleases: Release deleted successfully:', id);
       setReleases(prevReleases => prevReleases.filter(release => release.id !== id));
-
+      
       return Promise.resolve();
     } catch (error) {
       console.error('useReleases: Error deleting release:', error);

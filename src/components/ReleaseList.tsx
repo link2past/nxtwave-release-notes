@@ -8,7 +8,7 @@ interface ReleaseListProps {
   releases: ReleaseNote[];
   onSaveRelease: (release: Partial<ReleaseNote>) => void;
   onReleaseClick: (release: ReleaseNote) => void;
-  onDeleteRelease: (id: string) => void;
+  onDeleteRelease: (id: string) => Promise<void>;
   showNewReleaseButton?: boolean;
 }
 
@@ -44,7 +44,7 @@ export function ReleaseList({
                 <ReleaseCard 
                   release={release}
                   onClick={() => onReleaseClick(release)}
-                  onDelete={() => onDeleteRelease(release.id)}
+                  onDelete={onDeleteRelease}
                 />
               </div>
               {role === 'admin' && (

@@ -34,7 +34,7 @@ export default function Index() {
     fetchReleases();
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): Promise<void> => {
     if (isDeleting) return;
     
     setIsDeleting(true);
