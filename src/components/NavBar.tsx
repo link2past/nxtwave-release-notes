@@ -5,7 +5,14 @@ import { NavbarActions } from "./NavbarActions";
 
 export function NavBar() {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthPage = location.pathname === '/login' || 
+                    location.pathname === '/register' || 
+                    location.pathname === '/nxtwave/register/admin';
+
+  // Don't render the navbar at all on admin registration page
+  if (location.pathname === '/nxtwave/register/admin') {
+    return null;
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
