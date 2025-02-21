@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { RegisterForm } from "@/components/auth/RegisterForm";
@@ -13,9 +13,9 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { type } = useParams();
+  const location = useLocation();
 
-  const isAdmin = type === 'admin';
+  const isAdmin = location.pathname === '/nxtwave/register/admin';
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();

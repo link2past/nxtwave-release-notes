@@ -9,7 +9,6 @@ import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
-import RegistrationChoice from "@/pages/RegistrationChoice";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function App() {
@@ -22,8 +21,8 @@ function App() {
             <div className="pt-16"> {/* Add padding to account for fixed navbar */}
               <Routes>
                 <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<RegistrationChoice />} />
-                <Route path="/register/:type" element={<Register />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/nxtwave/register/admin" element={<Register />} />
                 <Route
                   path="/dashboard"
                   element={
