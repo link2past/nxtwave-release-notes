@@ -31,7 +31,9 @@ export function useReleases() {
         throw new Error(result.error);
       }
 
-      await fetchReleases();
+      // Immediately fetch updated releases list
+      const updatedReleases = await releasesService.fetchReleases();
+      setReleases(updatedReleases);
       
       toast({
         title: release.id ? "Release updated" : "Release created",
