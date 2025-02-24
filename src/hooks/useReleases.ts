@@ -31,9 +31,7 @@ export function useReleases() {
         throw new Error(result.error);
       }
 
-      // Fetch the latest releases to get the new one with all relationships
-      const fetchedReleases = await releasesService.fetchReleases();
-      setReleases(fetchedReleases);
+      await fetchReleases();
       
       toast({
         title: release.id ? "Release updated" : "Release created",

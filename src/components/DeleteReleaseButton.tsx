@@ -86,7 +86,7 @@ export function DeleteReleaseButton({ onDelete }: DeleteReleaseButtonProps) {
             }}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            Delete
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

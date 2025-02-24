@@ -18,29 +18,20 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
   const { role } = useUserRole();
 
   const handleClick = (e: React.MouseEvent) => {
-    // Check if the click originated from a button or its children
-    if (e.target instanceof Element && (
-      e.target.closest('.delete-button') ||
-      e.target.closest('.copy-link-button') ||
-      e.target.closest('button')
-    )) {
-      e.stopPropagation();
+    if ((e.target as HTMLElement).closest('.delete-button, .copy-link-button')) {
       return;
     }
     onClick?.();
   };
 
   const handleDelete = async () => {
-    console.log('ReleaseCard: Delete initiated for release:', release.id);
-    if (!onDelete) return Promise.resolve();
-    
-    try {
-      await onDelete(release.id);
-      console.log('ReleaseCard: Delete completed for release:', release.id);
-      return Promise.resolve();
-    } catch (error) {
-      console.error('ReleaseCard: Delete failed for release:', release.id, error);
-      return Promise.reject(error);
+    console.log('ReleaseCard: Delete clicked for release:', release.id);
+    if (onDelete) {
+      try {
+        await onDelete(release.id);
+      } catch (error) {
+        console.error('Error in ReleaseCard delete:', error);
+      }
     }
   };
 
