@@ -30,16 +30,16 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
     onClick?.();
   };
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log('ReleaseCard: Delete clicked for release:', release.id);
+  const handleDelete = () => {
     if (onDelete) {
       try {
-        await onDelete(release.id);
+        return onDelete(release.id);
       } catch (error) {
         console.error('Error in ReleaseCard delete:', error);
+        return Promise.reject(error);
       }
     }
+    return Promise.resolve();
   };
 
   return (
