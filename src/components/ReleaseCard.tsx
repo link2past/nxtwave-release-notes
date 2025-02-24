@@ -30,16 +30,18 @@ export function ReleaseCard({ release, onClick, onDelete }: ReleaseCardProps) {
     onClick?.();
   };
 
-  const handleDelete = () => {
-    if (onDelete) {
-      try {
-        return onDelete(release.id);
-      } catch (error) {
-        console.error('Error in ReleaseCard delete:', error);
-        return Promise.reject(error);
-      }
+  const handleDelete = async () => {
+    console.log('ReleaseCard: Delete initiated for release:', release.id);
+    if (!onDelete) return Promise.resolve();
+    
+    try {
+      await onDelete(release.id);
+      console.log('ReleaseCard: Delete completed for release:', release.id);
+      return Promise.resolve();
+    } catch (error) {
+      console.error('ReleaseCard: Delete failed for release:', release.id, error);
+      return Promise.reject(error);
     }
-    return Promise.resolve();
   };
 
   return (
