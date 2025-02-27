@@ -40,7 +40,7 @@ export function ClickUpIntegration() {
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
   const { toast } = useToast();
-  const { handleSaveRelease } = useReleases();
+  const { handleSaveRelease, fetchReleases } = useReleases();
 
   const handleFetchTasks = async () => {
     if (!apiKey || !listId) {
@@ -64,6 +64,15 @@ export function ClickUpIntegration() {
 
       if (error) throw error;
 
+      if (!data.tasks || data.tasks.length === 0) {
+        toast({
+          title: "No tasks found",
+          description: "No tasks were found for the given criteria.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setTasks(data.tasks);
       toast({
         title: "Success!",
@@ -82,6 +91,15 @@ export function ClickUpIntegration() {
   };
 
   const handleCreateRelease = async (task: Task) => {
+    if (!task.name || !task.description) {
+      toast({
+        title: "Invalid task data",
+        description: "Task must have both a title and description.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await handleSaveRelease({
         title: task.name,
@@ -92,6 +110,9 @@ export function ClickUpIntegration() {
         labels: [],
       });
 
+      // Fetch updated releases immediately
+      await fetchReleases();
+
       toast({
         title: "Success",
         description: "Release created from task successfully",
@@ -100,7 +121,7 @@ export function ClickUpIntegration() {
       console.error('Error creating release:', error);
       toast({
         title: "Error",
-        description: "Failed to create release from task",
+        description: "Failed to create release from task. Please try again.",
         variant: "destructive",
       });
     }
@@ -172,7 +193,7 @@ export function ClickUpIntegration() {
                   {date ? format(date, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={date}

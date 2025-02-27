@@ -32,8 +32,7 @@ export function useReleases() {
       }
 
       // Immediately fetch updated releases list
-      const updatedReleases = await releasesService.fetchReleases();
-      setReleases(updatedReleases);
+      await fetchReleases();
       
       toast({
         title: release.id ? "Release updated" : "Release created",
@@ -63,11 +62,23 @@ export function useReleases() {
       }
 
       console.log('useReleases: Release deleted successfully:', id);
+      
+      // Update the local state immediately
       setReleases(prevReleases => prevReleases.filter(release => release.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Release deleted successfully",
+      });
       
       return Promise.resolve();
     } catch (error) {
       console.error('useReleases: Error deleting release:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the release. Please try again.",
+        variant: "destructive",
+      });
       return Promise.reject(error);
     }
   };
