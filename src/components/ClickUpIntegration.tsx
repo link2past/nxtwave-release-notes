@@ -10,13 +10,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { useReleases } from "@/hooks/useReleases";
 
 interface Task {
   id: string;
   name: string;
+  description: string;
   status: string;
   dueDate: string | null;
   priority: string;
@@ -27,7 +38,9 @@ export function ClickUpIntegration() {
   const [listId, setListId] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
+  const [date, setDate] = useState<Date>();
   const { toast } = useToast();
+  const { handleSaveRelease } = useReleases();
 
   const handleFetchTasks = async () => {
     if (!apiKey || !listId) {
@@ -42,7 +55,11 @@ export function ClickUpIntegration() {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('fetch-clickup-tasks', {
-        body: { apiKey, listId }
+        body: { 
+          apiKey, 
+          listId,
+          startDate: date ? date.toISOString() : null
+        }
       });
 
       if (error) throw error;
@@ -61,6 +78,31 @@ export function ClickUpIntegration() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateRelease = async (task: Task) => {
+    try {
+      await handleSaveRelease({
+        title: task.name,
+        description: task.description,
+        datetime: task.dueDate || new Date().toISOString(),
+        category: "feature",
+        tags: [],
+        labels: [],
+      });
+
+      toast({
+        title: "Success",
+        description: "Release created from task successfully",
+      });
+    } catch (error) {
+      console.error('Error creating release:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create release from task",
+        variant: "destructive",
+      });
     }
   };
 
@@ -115,6 +157,31 @@ export function ClickUpIntegration() {
               placeholder="Enter your ClickUp List ID"
             />
           </div>
+          <div className="grid gap-2">
+            <label className="text-sm font-medium">Start Date (Optional)</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
           <Button onClick={handleFetchTasks} disabled={loading}>
             {loading ? "Fetching tasks..." : "Fetch Tasks"}
           </Button>
@@ -144,6 +211,14 @@ export function ClickUpIntegration() {
                       </span>
                     )}
                   </div>
+                  <Button 
+                    onClick={() => handleCreateRelease(task)}
+                    variant="secondary"
+                    size="sm"
+                    className="mt-2"
+                  >
+                    Create Release
+                  </Button>
                 </div>
               ))}
             </div>

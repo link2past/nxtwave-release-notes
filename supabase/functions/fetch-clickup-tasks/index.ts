@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { apiKey, listId } = await req.json()
+    const { apiKey, listId, startDate } = await req.json()
 
     if (!apiKey || !listId) {
       throw new Error('API key and List ID are required')
@@ -21,9 +21,8 @@ serve(async (req) => {
 
     const tasks = [];
     let page = 0;
-    const PAGE_SIZE = 100; // ClickUp's default page size
+    const PAGE_SIZE = 100;
 
-    // Recursively fetch all tasks using pagination
     async function fetchTasksPage() {
       console.log(`Fetching page ${page}...`);
       const response = await fetch(
@@ -49,25 +48,29 @@ serve(async (req) => {
 
       console.log(`Found ${data.tasks.length} tasks on page ${page}`);
       
-      // Map and add tasks to our array
-      tasks.push(...data.tasks.map((task: any) => ({
+      // Filter tasks by date if startDate is provided
+      const filteredTasks = data.tasks.filter((task: any) => {
+        if (!startDate) return true;
+        if (!task.due_date) return false;
+        return task.due_date >= new Date(startDate).getTime();
+      });
+
+      tasks.push(...filteredTasks.map((task: any) => ({
         id: task.id,
         name: task.name,
+        description: task.description || '',
         status: task.status?.status || 'Unknown',
         dueDate: task.due_date,
         priority: task.priority?.priority || 'None'
       })));
 
-      // If we got a full page of results, there might be more
       if (data.tasks.length === PAGE_SIZE) {
         page++;
-        await fetchTasksPage(); // Recursively fetch next page
+        await fetchTasksPage();
       }
     }
 
-    // Start the recursive fetching process
     await fetchTasksPage();
-
     console.log(`Total tasks fetched: ${tasks.length}`);
 
     return new Response(
