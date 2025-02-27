@@ -10,6 +10,7 @@ export function useReleases() {
 
   const fetchReleases = async () => {
     try {
+      console.log('Fetching releases...');
       const fetchedReleases = await releasesService.fetchReleases();
       console.log('Fetched releases:', fetchedReleases);
       setReleases(fetchedReleases);
@@ -25,12 +26,15 @@ export function useReleases() {
 
   const handleSaveRelease = async (release: Partial<ReleaseNote>) => {
     try {
+      console.log('Saving release:', release);
       const result = await releasesService.saveRelease(release);
       
       if (!result.success) {
         throw new Error(result.error);
       }
 
+      console.log('Release saved successfully');
+      
       // Immediately fetch updated releases list
       await fetchReleases();
       
@@ -53,7 +57,7 @@ export function useReleases() {
 
   const handleDeleteRelease = async (id: string): Promise<void> => {
     try {
-      console.log('useReleases: Attempting to delete release:', id);
+      console.log('Attempting to delete release:', id);
       
       const result = await releasesService.deleteRelease(id);
       
@@ -61,7 +65,7 @@ export function useReleases() {
         throw new Error(result.error);
       }
 
-      console.log('useReleases: Release deleted successfully:', id);
+      console.log('Release deleted successfully:', id);
       
       // Update the local state immediately
       setReleases(prevReleases => prevReleases.filter(release => release.id !== id));
@@ -73,7 +77,7 @@ export function useReleases() {
       
       return Promise.resolve();
     } catch (error) {
-      console.error('useReleases: Error deleting release:', error);
+      console.error('Error deleting release:', error);
       toast({
         title: "Error",
         description: "Failed to delete the release. Please try again.",

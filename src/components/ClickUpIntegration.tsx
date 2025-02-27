@@ -39,8 +39,14 @@ export function ClickUpIntegration() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
+  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
   const { handleSaveRelease, fetchReleases } = useReleases();
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    console.log('Selected date:', selectedDate);
+    setDate(selectedDate);
+  };
 
   const handleFetchTasks = async () => {
     if (!apiKey || !listId) {
@@ -54,6 +60,7 @@ export function ClickUpIntegration() {
 
     setLoading(true);
     try {
+      console.log('Fetching tasks with date:', date?.toISOString());
       const { data, error } = await supabase.functions.invoke('fetch-clickup-tasks', {
         body: { 
           apiKey, 
@@ -65,6 +72,7 @@ export function ClickUpIntegration() {
       if (error) throw error;
 
       if (!data.tasks || data.tasks.length === 0) {
+        setTasks([]);
         toast({
           title: "No tasks found",
           description: "No tasks were found for the given criteria.",
@@ -73,6 +81,7 @@ export function ClickUpIntegration() {
         return;
       }
 
+      console.log('Fetched tasks:', data.tasks);
       setTasks(data.tasks);
       toast({
         title: "Success!",
@@ -91,26 +100,26 @@ export function ClickUpIntegration() {
   };
 
   const handleCreateRelease = async (task: Task) => {
-    if (!task.name || !task.description) {
+    if (!task.name) {
       toast({
         title: "Invalid task data",
-        description: "Task must have both a title and description.",
+        description: "Task must have a title.",
         variant: "destructive",
       });
       return;
     }
 
     try {
+      console.log('Creating release from task:', task);
       await handleSaveRelease({
         title: task.name,
-        description: task.description,
-        datetime: task.dueDate || new Date().toISOString(),
+        description: task.description || "", // Optional description
+        datetime: task.dueDate ? new Date(parseInt(task.dueDate)).toISOString() : new Date().toISOString(),
         category: "feature",
         tags: [],
         labels: [],
       });
 
-      // Fetch updated releases immediately
       await fetchReleases();
 
       toast({
@@ -143,11 +152,11 @@ export function ClickUpIntegration() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Connect ClickUp</Button>
+        <Button variant="outline" onClick={() => setIsOpen(true)}>Connect ClickUp</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>ClickUp Integration</DialogTitle>
           <DialogDescription>
@@ -179,7 +188,7 @@ export function ClickUpIntegration() {
             />
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-medium">Start Date (Optional)</label>
+            <label className="text-sm font-medium">Filter by Start Date (Optional)</label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -193,32 +202,47 @@ export function ClickUpIntegration() {
                   {date ? format(date, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent align="start" className="w-auto p-0">
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={handleDateSelect}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
+            {date && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="mt-1"
+                onClick={() => setDate(undefined)}
+              >
+                Clear date
+              </Button>
+            )}
           </div>
           <Button onClick={handleFetchTasks} disabled={loading}>
             {loading ? "Fetching tasks..." : "Fetch Tasks"}
           </Button>
         </div>
-        {tasks.length > 0 && (
+        {tasks.length > 0 ? (
           <div className="mt-4">
             <h3 className="text-sm font-medium mb-2">Tasks ({tasks.length}):</h3>
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="space-y-3">
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="p-3 border rounded-lg mb-2 last:mb-0 hover:bg-accent/50 transition-colors"
+                  className="p-3 border rounded-lg hover:bg-accent/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <p className="font-medium">{task.name}</p>
+                      {task.description && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {task.description}
+                        </p>
+                      )}
                       <div className="flex gap-2 mt-2">
                         <Badge variant="outline">{task.status}</Badge>
                         <Badge className={getPriorityColor(task.priority)}>
@@ -227,7 +251,7 @@ export function ClickUpIntegration() {
                       </div>
                     </div>
                     {task.dueDate && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
                         Due: {new Date(parseInt(task.dueDate)).toLocaleDateString()}
                       </span>
                     )}
@@ -243,6 +267,10 @@ export function ClickUpIntegration() {
                 </div>
               ))}
             </div>
+          </div>
+        ) : (
+          <div className="text-center py-6 text-muted-foreground">
+            {loading ? "Loading tasks..." : "No tasks found"}
           </div>
         )}
       </DialogContent>
