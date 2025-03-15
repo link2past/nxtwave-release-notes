@@ -9,206 +9,208 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      labels: {
+      invitations: {
         Row: {
-          color: string
+          created_at: string | null
+          email: string
+          expires_at: string
           id: string
-          name: string
+          invited_by: string | null
+          project_access: string[]
+          role: string
+          status: string
+          token: string
+          updated_at: string | null
         }
         Insert: {
-          color?: string
+          created_at?: string | null
+          email: string
+          expires_at: string
           id?: string
-          name: string
+          invited_by?: string | null
+          project_access: string[]
+          role: string
+          status?: string
+          token: string
+          updated_at?: string | null
         }
         Update: {
-          color?: string
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          project_access?: string[]
+          role?: string
+          status?: string
+          token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          recent_release: string | null
+          total_releases: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          recent_release?: string | null
+          total_releases?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
           id?: string
           name?: string
+          recent_release?: string | null
+          total_releases?: number | null
+          updated_at?: string | null
         }
         Relationships: []
-      }
-      media: {
-        Row: {
-          created_at: string | null
-          id: string
-          release_id: string | null
-          type: string
-          url: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          release_id?: string | null
-          type: string
-          url: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          release_id?: string | null
-          type?: string
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "media_release_id_fkey"
-            columns: ["release_id"]
-            isOneToOne: false
-            referencedRelation: "releases"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          created_at: string | null
-          id: string
-          updated_at: string | null
-          username: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id: string
-          updated_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          updated_at?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
-      release_labels: {
-        Row: {
-          label_id: string
-          release_id: string
-        }
-        Insert: {
-          label_id: string
-          release_id: string
-        }
-        Update: {
-          label_id?: string
-          release_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "release_labels_label_id_fkey"
-            columns: ["label_id"]
-            isOneToOne: false
-            referencedRelation: "labels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "release_labels_release_id_fkey"
-            columns: ["release_id"]
-            isOneToOne: false
-            referencedRelation: "releases"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      release_tags: {
-        Row: {
-          release_id: string
-          tag_id: string
-        }
-        Insert: {
-          release_id: string
-          tag_id: string
-        }
-        Update: {
-          release_id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "release_tags_release_id_fkey"
-            columns: ["release_id"]
-            isOneToOne: false
-            referencedRelation: "releases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "release_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       releases: {
         Row: {
           category: string
           created_at: string | null
-          datetime: string
-          description: string
+          description: string | null
+          developer: string | null
           id: string
-          slug: string
+          pm: string | null
+          product_manager: string | null
+          project_id: string | null
+          project_manager: string | null
+          release_date: string | null
+          tags: string[] | null
           title: string
           updated_at: string | null
         }
         Insert: {
           category: string
           created_at?: string | null
-          datetime?: string
-          description: string
+          description?: string | null
+          developer?: string | null
           id?: string
-          slug: string
+          pm?: string | null
+          product_manager?: string | null
+          project_id?: string | null
+          project_manager?: string | null
+          release_date?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string | null
         }
         Update: {
           category?: string
           created_at?: string | null
-          datetime?: string
-          description?: string
+          description?: string | null
+          developer?: string | null
           id?: string
-          slug?: string
+          pm?: string | null
+          product_manager?: string | null
+          project_id?: string | null
+          project_manager?: string | null
+          release_date?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "releases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      tags: {
-        Row: {
-          color: string
-          id: string
-          name: string
-        }
-        Insert: {
-          color?: string
-          id?: string
-          name: string
-        }
-        Update: {
-          color?: string
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
+      user_project_access: {
         Row: {
           created_at: string | null
           id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          project_id: string | null
+          updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          project_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          project_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_project_access_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_project_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          auth_id: string | null
+          avatar: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          auth_id?: string | null
+          avatar?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          auth_id?: string | null
+          avatar?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          role?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -217,28 +219,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_new_profile: {
+      send_invitation_email: {
         Args: {
-          user_id: string
-          user_name: string
+          email: string
+          token: string
+          invited_by_name: string
         }
         Returns: undefined
       }
-      get_user_role: {
-        Args: {
-          user_uid: string
-        }
-        Returns: Database["public"]["Enums"]["app_role"]
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-        }
-        Returns: boolean
-      }
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
